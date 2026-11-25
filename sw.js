@@ -1,5 +1,5 @@
 // Offline shell cache. Patient data is never cached here.
-const CACHE = "nidan-v5";
+const CACHE = "nidan-v6";
 const SHELL = ["./", "index.html", "style.css", "app.js", "config.js", "manifest.json", "icon.svg", "reception.js", "dashboard.js"];
 
 self.addEventListener("install", e => {
@@ -18,8 +18,8 @@ self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   if (e.request.method !== "GET" || url.origin !== location.origin) return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: "no-cache" })
       .then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return res; })
-      .catch(() => caches.match(e.request))
+      .catch(() => caches.match(e.request, { ignoreSearch: true }))
   );
 });

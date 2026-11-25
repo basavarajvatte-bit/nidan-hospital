@@ -98,7 +98,7 @@ async function load() {
   dash.querySelectorAll("[data-go]").forEach(t => t.onclick = () => openModule(t.dataset.go));
   dash.querySelectorAll("[data-p]").forEach(a => a.onclick = async e => {
     e.preventDefault(); clearInterval(timer);
-    const mod = await import("./reception.js"); mod.openPatient(C, a.dataset.p);
+    const mod = await import("./reception.js?v=" + (window.APP_VERSION || "")); mod.openPatient(C, a.dataset.p);
   });
   dash.querySelectorAll("[data-read]").forEach(b => b.onclick = async () => {
     b.disabled = true;
@@ -109,5 +109,5 @@ async function load() {
 
 async function openModule(id) {
   clearInterval(timer);
-  if (id === "reception") (await import("./reception.js")).render(C);
+  if (id === "reception") (await import("./reception.js?v=" + (window.APP_VERSION || ""))).render(C);
 }

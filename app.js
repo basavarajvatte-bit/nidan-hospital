@@ -1,6 +1,7 @@
 // Vatte Hospital OS — Phase 1: login, roles, role-based home screen, staff management.
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
+const APP_VERSION = "6"; window.APP_VERSION = APP_VERSION; // bump on every release so phones get the new code
 const app = document.getElementById("app");
 const who = document.getElementById("who");
 const cfg = window.NIDAN_CONFIG || {};
@@ -133,7 +134,7 @@ function openModule(id) {
   if (id === "audit") return showAudit();
   if (m.file) {
     app.innerHTML = `<p class="muted center">Loading…</p>`;
-    return import(m.file)
+    return import(m.file + "?v=" + APP_VERSION)
       .then(mod => mod.render({ sb, me, app, esc, goHome: showHome }))
       .catch(e => { app.innerHTML = `<div class="card msg err">Module load nahi hua: ${esc(e.message)}</div>`; });
   }
