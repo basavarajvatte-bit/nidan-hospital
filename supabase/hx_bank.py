@@ -28,7 +28,7 @@ def Q(id, comp, section, ord, qtype, en, hi, mr, term=None, opts=None, key=None,
     QUESTIONS.append(dict(id=id, complaint_id=comp, section=section, ord=ord, qtype=qtype, options=opts,
                           text_en=en, text_hi=hi, text_mr=mr, clinical_term=term, dedupe_key=key, show_if=show,
                           applies_to=applies, red_flag=bool(rf), red_flag_note=rf, positive_means=pos,
-                          negative_means=neg, differentials=ddx or [], source=src))
+                          negative_means=neg, differentials=ddx or [], source=src, active=True))
 
 
 YES = lambda q: {"q": q, "eq": "yes"}
@@ -598,6 +598,39 @@ Q("ob_pregnant", None, "obstetric", 17, "choice", "Pregnancy status", "क्य
   src=f"{H}, Ch 5 (Women), p45")
 
 
+# ------------------------------------------------------------------ SYSTEM MODULES (one file per body system)
+import pathlib as _pl
+for _f in ["hx_cvs.py"]:
+    exec((_pl.Path(__file__).parent / _f).read_text(encoding="utf-8"))
+
+# Questions replaced by better ones (never deleted, only switched off)
+RETIRED = {"cp_exertion": "replaced by cp_triggers + cp_relief (CVS phase)",
+           "cp_meals": "replaced by cp_triggers + cp_relief (CVS phase)",
+           "cp_posture": "replaced by cp_triggers/cp_relief options (CVS phase)"}
+for _q in QUESTIONS:
+    if _q["id"] in RETIRED:
+        _q["active"] = False
+
+# One name per condition so the doctor's "possibilities" list adds up correctly
+DDX_ALIAS = {"Peptic ulcer": "Peptic ulcer / gastritis", "Gastric ulcer": "Peptic ulcer / gastritis",
+             "Anxiety": "Anxiety / panic", "Syncope": "Vasovagal syncope", "Stroke": "Stroke / TIA",
+             "GORD": "Reflux / GORD", "UTI": "Cystitis / UTI", "Biliary": "Biliary colic / cholecystitis",
+             "ACE-inhibitor": "ACE-inhibitor cough", "Injury": "Injury / fracture", "Acute LVF": "Heart failure",
+             "Heart failure (alcoholic cardiomyopathy)": "Heart failure", "Viral": "Viral fever",
+             "Chikungunya": "Viral arthritis (e.g. chikungunya)", "Asthma attack": "Asthma", "COPD exacerbation": "COPD"}
+_n = lambda L: list(dict.fromkeys(DDX_ALIAS.get(d, d) for d in L))
+for _q in QUESTIONS:
+    _q["differentials"] = _n(_q["differentials"])
+    for _o in (_q["options"] or []):
+        if "ddx" in _o:
+            _o["ddx"] = _n(_o["ddx"])
+
+# Clinical order inside each complaint (ord) — re-sequenced after adding system modules
+REORDER = {"chest_pain": ["cp_site", "cp_character", "cp_onset_sudden", "cp_episode", "cp_radiation", "cp_triggers", "cp_relief"]}
+for _c, _ids in REORDER.items():
+    for _i, _id in enumerate(_ids, 1):
+        next(q for q in QUESTIONS if q["id"] == _id)["ord"] = _i
+
 # ------------------------------------------------------------------ SQL output
 def lit(v):
     if v is None:
@@ -625,7 +658,7 @@ def build():
                    f" name_mr=excluded.name_mr, icon=excluded.icon, ord=excluded.ord, source=excluded.source;")
     qcols = ["id", "complaint_id", "section", "ord", "qtype", "options", "text_en", "text_hi", "text_mr", "clinical_term",
              "dedupe_key", "show_if", "applies_to", "red_flag", "red_flag_note", "positive_means", "negative_means",
-             "differentials", "source"]
+             "differentials", "source", "active"]
     ids = set()
     for q in QUESTIONS:
         assert q["id"] not in ids, q["id"]
