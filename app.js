@@ -14,7 +14,7 @@ const ROLES = {
 // Every module, who can see it, and which phase builds it.
 const MODULES = [
   { id: "dashboard",  ico: "📊", name: "Doctor Dashboard", roles: ["doctor", "admin"], phase: 4 },
-  { id: "reception",  ico: "🧾", name: "Reception",        roles: ["doctor", "admin", "receptionist"], phase: 3 },
+  { id: "reception",  ico: "🧾", name: "Reception",        roles: ["doctor", "admin", "receptionist"], ready: true, file: "./reception.js" },
   { id: "nursing",    ico: "🩺", name: "Nursing Sister",   roles: ["doctor", "admin", "nurse"], phase: 5 },
   { id: "nidan",      ico: "❓", name: "Nidan Questions",  roles: ["doctor", "nurse"], phase: 6 },
   { id: "appointments", ico: "📅", name: "Appointments",   roles: ["doctor", "admin", "receptionist"], phase: 9 },
@@ -131,6 +131,12 @@ function openModule(id) {
   if (!m || !m.roles.includes(me.role)) return showHome();
   if (id === "staff") return showStaff();
   if (id === "audit") return showAudit();
+  if (m.file) {
+    app.innerHTML = `<p class="muted center">Loading…</p>`;
+    return import(m.file)
+      .then(mod => mod.render({ sb, me, app, esc, goHome: showHome }))
+      .catch(e => { app.innerHTML = `<div class="card msg err">Module load nahi hua: ${esc(e.message)}</div>`; });
+  }
   app.innerHTML = `<button class="ghost small back" id="bk">← Wapas</button>
     <div class="card"><h2>${m.ico} ${esc(m.name)}</h2>
     <p class="muted">Ye module Phase ${m.phase} mein banega.</p></div>`;

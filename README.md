@@ -10,7 +10,7 @@ AI-powered hospital management app, with a team of AI agents (Sister, Reception,
 ## 20-phase roadmap
 1. ✅ Base app, login, roles, audit log
 2. ✅ Database (all core tables, per-hospital isolation, tamper-proof records)
-3. Reception: registration, UHID, duplicate check
+3. ✅ Reception: registration, UHID, duplicate check, search, OPD, IPD admit/discharge, beds
 4. Doctor dashboard
 5. Nursing Sister: vitals, notes, abnormal alerts
 6. Nidan triage questions + medical book PDF

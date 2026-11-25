@@ -33,3 +33,17 @@ th,td{padding:10px 6px;border-bottom:1px solid var(--line);text-align:left;verti
 .badge.pending{background:#fef3c7;color:var(--amber)}
 .warn{background:#fef3c7;border-color:#fcd34d}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+h3{margin:0 0 10px;font-size:17px}
+textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px;font-family:inherit}
+a{color:var(--teal);font-weight:600}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px}
+.tab{background:#fff;color:var(--text);border:1px solid var(--line);white-space:nowrap;padding:10px 14px;font-size:14px}
+.tab.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:26px}
+.stat span{font-size:12px;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.beds{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+.bed{border:2px solid;border-radius:12px;padding:10px;text-align:center;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.bed button{margin-top:4px}
