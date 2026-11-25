@@ -139,8 +139,12 @@ create policy "doctor/admin read audit" on public.audit_logs
 grant usage on schema public to authenticated;
 grant select on public.hospitals, public.profiles, public.audit_logs to authenticated;
 revoke all on public.hospitals, public.profiles, public.audit_logs from anon;
+revoke insert, update, delete on public.hospitals, public.profiles, public.audit_logs from authenticated;
 
 revoke all on function public.set_staff_role(uuid, text) from public, anon;
+revoke all on function public.handle_new_user() from public, anon, authenticated;
 grant execute on function public.set_staff_role(uuid, text) to authenticated;
+revoke execute on function public.my_hospital() from public, anon;
+revoke execute on function public.my_role() from public, anon;
 grant execute on function public.my_hospital() to authenticated;
 grant execute on function public.my_role() to authenticated;
