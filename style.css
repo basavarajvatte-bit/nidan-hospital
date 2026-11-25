@@ -97,3 +97,4 @@ details{margin-top:10px}
 .report h4{margin:16px 0 6px;color:var(--teal)}
 .report p{margin:4px 0;font-size:14px}
 @media print{.topbar,.back,.tabs,button,#pane>.row{display:none!important}.card{border:none}body{background:#fff}}
+.sysname{font-size:12px;font-weight:700;color:var(--teal);text-transform:uppercase;margin:12px 0 6px}

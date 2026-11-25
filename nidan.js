@@ -185,7 +185,8 @@ function complaintScreen() {
     <div class="card"><p>Patient se poochho: <b>${S.lang === "mr" ? "आज कोणत्या त्रासामुळे दवाखान्यात आलात?" : S.lang === "en" ? "What problem has brought you here today?" : "आज किस तकलीफ़ की वजह से अस्पताल आए हैं?"}</b></p>
     <label>Patient ke apne shabdon mein</label><textarea id="own" rows="2">${C.esc(S.session.complaints?.[0]?.own_words || "")}</textarea>
     <label>Takleef chuno (ek se zyada ho sakti hain)</label>
-    <div class="chips">${BANK.complaints.map(c => `<button class="chip ${chosen.has(c.id) ? "on" : ""}" data-c="${c.id}">${c.icon || ""} ${C.esc(c[`name_${S.lang}`] || c.name_en)}<br><small>${C.esc(c.name_en)}</small></button>`).join("")}</div>
+    ${[...new Set(BANK.complaints.map(c => c.system))].map(sys => `<div class="sysname">${C.esc(sys)}</div>
+      <div class="chips">${BANK.complaints.filter(c => c.system === sys).map(c => `<button class="chip ${chosen.has(c.id) ? "on" : ""}" data-c="${c.id}">${c.icon || ""} ${C.esc(c[`name_${S.lang}`] || c.name_en)}<br><small>${C.esc(c.name_en)}</small></button>`).join("")}</div>`).join("")}
     <div id="details"></div>
     <div class="two" style="margin-top:10px">
       <div><label>Height (cm)</label><input id="ht" type="number" inputmode="decimal" value="${S.session.height_cm ?? ""}"></div>
