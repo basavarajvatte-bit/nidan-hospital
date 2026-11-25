@@ -157,7 +157,8 @@ Q("ft_duration", "fatigue", "hopi", 1, "choice", "How long?", "कब से?", 
     O("months", "Months, slowly worse", "महीनों से, धीरे-धीरे बढ़ती", "महिन्यांपासून, हळूहळू वाढणारी", ["Anaemia", "Hypothyroidism", "Diabetes", "Depression", "Chronic kidney disease"])],
   src=FT)
 Q("ft_clues", "fatigue", "associated", 2, "multi", "Any of these?", "इनमें से कुछ?", "यापैकी काही?", term="Clues to cause", opts=[
-    O("pale_breathless", "Pale, breathless on walking, heavy periods / black stool", "पीलापन, चलने पर साँस फूलना, ज़्यादा माहवारी / काला मल", "फिकटपणा, चालताना धाप, जास्त पाळी / काळी शौच", ["Anaemia"]),
+    O("pale_breathless", "Pale, breathless on walking, black stool / blood loss", "पीलापन, चलने पर साँस फूलना, काला मल / खून जाना", "फिकटपणा, चालताना धाप, काळी शौच / रक्तस्राव", ["Anaemia"]),
+    O("heavy_menses", "Heavy periods", "ज़्यादा माहवारी", "जास्त पाळी", ["Anaemia"], only={"sex": "female"}),
     O("thirst", "Thirst / passing more urine", "प्यास / ज़्यादा पेशाब", "तहान / जास्त लघवी", ["Diabetes"]),
     O("cold_slow", "Feels cold, slow, weight gain", "ठंड, सुस्ती, वज़न बढ़ना", "थंडी, सुस्ती, वजन वाढ", ["Hypothyroidism"]),
     O("dark_skin_salt", "Skin/gums getting darker, salt craving, dizzy on standing, weight loss", "त्वचा/मसूड़े काले होना, नमक की चाह, खड़े होने पर चक्कर, वज़न घटना", "त्वचा/हिरड्या काळ्या होणे, मिठाची ओढ, उभे राहिल्यावर चक्कर, वजन घटणे", ["Addison's disease"]),
