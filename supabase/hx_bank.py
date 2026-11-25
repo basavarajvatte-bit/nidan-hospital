@@ -602,7 +602,7 @@ Q("ob_pregnant", None, "obstetric", 17, "choice", "Pregnancy status", "क्य
 
 # ------------------------------------------------------------------ SYSTEM MODULES (one file per body system)
 import pathlib as _pl
-for _f in ["hx_cvs.py", "hx_resp.py", "hx_git.py", "hx_cns.py", "hx_uro.py", "hx_loco.py"]:
+for _f in ["hx_cvs.py", "hx_resp.py", "hx_git.py", "hx_cns.py", "hx_uro.py", "hx_loco.py", "hx_endo.py"]:
     exec((_pl.Path(__file__).parent / _f).read_text(encoding="utf-8"))
 
 # Questions replaced by better ones (never deleted, only switched off)
