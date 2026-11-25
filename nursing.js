@@ -44,7 +44,15 @@ async function showPatients() {
   const pane = $("pane");
   pane.innerHTML = `<div class="card">Loading…</div>`;
   const list = await currentPatients();
-  if (!list.length) { pane.innerHTML = `<div class="card muted">Abhi koi patient admit ya OPD mein nahi hai.</div>`; return; }
+  const searchBox = `<div class="card"><div class="row"><input id="nq" placeholder="🔍 Koi bhi patient dhundo (naam, mobile, UHID)" style="flex:1">
+    <button id="ngo">Search</button></div><div id="nres"></div></div>`;
+  if (!list.length) {
+    pane.innerHTML = searchBox + `<div class="card"><b>Abhi koi patient admit ya OPD line mein nahi hai.</b>
+      <p class="muted">Yahan sirf wahi patient apne aap dikhte hain jinka Reception par <b>OPD visit</b> shuru hua ho ya jo <b>admit</b> hon.
+      Kisi aur patient ke vitals lene ho toh upar search karo.</p></div>`;
+    wireSearch();
+    return;
+  }
   const ids = list.map(p => p.id);
   const [{ data: vit }, { data: ord }] = await Promise.all([
     C.sb.from("vitals").select("patient_id, recorded_at, bp_systolic, bp_diastolic, pulse, spo2, temperature_f, resp_rate")
@@ -53,7 +61,7 @@ async function showPatients() {
   ]);
   const last = {}; (vit || []).forEach(v => { if (!last[v.patient_id]) last[v.patient_id] = v; });
   const orders = {}; (ord || []).forEach(o => orders[o.patient_id] = (orders[o.patient_id] || 0) + 1);
-  pane.innerHTML = list.map(p => {
+  pane.innerHTML = searchBox + list.map(p => {
     const v = last[p.id];
     const abn = v && Object.keys(LIMITS).some(k => bad(k, v[k]));
     return `<div class="card pcard ${abn ? "abncard" : ""}" data-p="${p.id}" data-e="${p.encounter_id || ""}">
@@ -66,6 +74,24 @@ async function showPatients() {
     </div>`;
   }).join("");
   pane.querySelectorAll(".pcard").forEach(c => c.onclick = () => showPatient(c.dataset.p, c.dataset.e || null));
+  wireSearch();
+}
+
+function wireSearch() {
+  const run = async () => {
+    const q = $("nq").value.replace(/[,()%*\\":]/g, " ").trim();
+    if (q.length < 2) return;
+    $("nres").textContent = "Dhundh raha hoon…";
+    const { data, error } = await C.sb.from("patients").select("id, uhid, full_name, age_years, phone")
+      .or(`full_name.ilike."%${q}%",phone.ilike."%${q}%",uhid.ilike."%${q}%"`).order("created_at", { ascending: false }).limit(20);
+    if (error) { $("nres").textContent = error.message; return; }
+    $("nres").innerHTML = data.length ? `<table style="margin-top:8px">${data.map(p => `<tr><td>
+      <a href="#" data-sp="${p.id}">${C.esc(p.full_name)}</a><br><small class="muted">${C.esc(p.uhid)} · ${p.age_years ?? "?"} saal</small></td>
+      <td>${C.esc(p.phone || "")}</td></tr>`).join("")}</table>` : `<p class="muted">Koi nahi mila.</p>`;
+    $("nres").querySelectorAll("[data-sp]").forEach(a => a.onclick = e => { e.preventDefault(); showPatient(a.dataset.sp, null); });
+  };
+  $("ngo").onclick = run;
+  $("nq").onkeydown = e => { if (e.key === "Enter") run(); };
 }
 
 // ---------- One patient ----------
