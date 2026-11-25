@@ -600,13 +600,14 @@ Q("ob_pregnant", None, "obstetric", 17, "choice", "Pregnancy status", "क्य
 
 # ------------------------------------------------------------------ SYSTEM MODULES (one file per body system)
 import pathlib as _pl
-for _f in ["hx_cvs.py"]:
+for _f in ["hx_cvs.py", "hx_resp.py"]:
     exec((_pl.Path(__file__).parent / _f).read_text(encoding="utf-8"))
 
 # Questions replaced by better ones (never deleted, only switched off)
 RETIRED = {"cp_exertion": "replaced by cp_triggers + cp_relief (CVS phase)",
            "cp_meals": "replaced by cp_triggers + cp_relief (CVS phase)",
-           "cp_posture": "replaced by cp_triggers/cp_relief options (CVS phase)"}
+           "cp_posture": "replaced by cp_triggers/cp_relief options (CVS phase)",
+           "br_occup": "replaced by br_occup_list (Respiratory phase)"}
 for _q in QUESTIONS:
     if _q["id"] in RETIRED:
         _q["active"] = False
@@ -617,7 +618,8 @@ DDX_ALIAS = {"Peptic ulcer": "Peptic ulcer / gastritis", "Gastric ulcer": "Pepti
              "GORD": "Reflux / GORD", "UTI": "Cystitis / UTI", "Biliary": "Biliary colic / cholecystitis",
              "ACE-inhibitor": "ACE-inhibitor cough", "Injury": "Injury / fracture", "Acute LVF": "Heart failure",
              "Heart failure (alcoholic cardiomyopathy)": "Heart failure", "Viral": "Viral fever",
-             "Chikungunya": "Viral arthritis (e.g. chikungunya)", "Asthma attack": "Asthma", "COPD exacerbation": "COPD"}
+             "Chikungunya": "Viral arthritis (e.g. chikungunya)", "Asthma attack": "Asthma", "COPD exacerbation": "COPD",
+             "Bronchitis": "Acute respiratory infection", "Respiratory infection": "Acute respiratory infection"}
 _n = lambda L: list(dict.fromkeys(DDX_ALIAS.get(d, d) for d in L))
 for _q in QUESTIONS:
     _q["differentials"] = _n(_q["differentials"])
