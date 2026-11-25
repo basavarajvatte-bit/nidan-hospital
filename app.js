@@ -1,4 +1,4 @@
-// Nidan Hospital OS — Phase 1: login, roles, role-based home screen, staff management.
+// Vatte Hospital OS — Phase 1: login, roles, role-based home screen, staff management.
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const app = document.getElementById("app");

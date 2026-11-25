@@ -60,7 +60,7 @@ begin
   perform pg_advisory_xact_lock(424242);
   select not exists (select 1 from public.profiles) into is_first;
   if is_first then
-    insert into public.hospitals(name) values ('Nidan Hospital') returning id into h;
+    insert into public.hospitals(name) values ('Vatte Hospital') returning id into h;
     r := 'doctor';
   else
     select id into h from public.hospitals order by created_at limit 1;

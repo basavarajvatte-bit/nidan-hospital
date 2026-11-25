@@ -1,4 +1,4 @@
-// Nidan Hospital OS — Phase 3: Reception (registration, duplicate check, search, OPD, IPD, beds)
+// Vatte Hospital OS — Phase 3: Reception (registration, duplicate check, search, OPD, IPD, beds)
 let C; // context: { sb, me, app, esc, goHome }
 
 const KIND = { opd: "OPD", ipd: "IPD (Admit)", emergency: "Emergency" };

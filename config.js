@@ -1,4 +1,4 @@
-// Nidan Hospital settings.
+// Vatte Hospital settings.
 // This is the Supabase PUBLIC (publishable) key — it is meant to be in the website.
 // Patient data is protected by the database security rules (RLS), not by hiding this key.
 window.NIDAN_CONFIG = {

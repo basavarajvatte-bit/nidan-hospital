@@ -1,4 +1,4 @@
-// Nidan Hospital OS — Phase 4: Doctor Command Center (dashboard)
+// Vatte Hospital OS — Phase 4: Doctor Command Center (dashboard)
 let C, timer;
 const $ = id => document.getElementById(id);
 const rs = n => "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });

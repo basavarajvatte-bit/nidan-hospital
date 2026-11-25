@@ -1,4 +1,4 @@
-# Nidan Hospital OS
+# Vatte Hospital OS
 
 AI-powered hospital management app, with a team of AI agents (Sister, Reception, Accountant, Pharmacy, Lab, HR…) supervised by a Boss AI that reports to the doctor.
 
