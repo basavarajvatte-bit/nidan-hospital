@@ -15,11 +15,13 @@ const SPECIAL = { yes: { hi: "हाँ", mr: "हो", en: "Yes" }, no: { hi: "
 async function loadBank() {
   if (BANK) return BANK;
   const [{ data: complaints, error: e1 }, { data: questions, error: e2 }] = await Promise.all([
-    C.sb.from("hx_complaints").select("*").eq("active", true).order("ord"),
-    C.sb.from("hx_questions").select("*").eq("active", true).order("ord")
+    C.sb.from("hx_complaints").select("*").order("ord"),
+    C.sb.from("hx_questions").select("*").order("ord")
   ]);
   if (e1 || e2) throw new Error((e1 || e2).message);
-  BANK = { complaints, questions, byId: Object.fromEntries(questions.map(q => [q.id, q])) };
+  // retired items stay loaded so old histories still show them; new histories only use active ones
+  BANK = { allComplaints: complaints, complaints: complaints.filter(c => c.active),
+           questions: questions.filter(q => q.active), byId: Object.fromEntries(questions.map(q => [q.id, q])) };
   return BANK;
 }
 
@@ -48,7 +50,7 @@ async function showList() {
   pane.innerHTML = `<div class="card">${data.length ? `<table>${data.map(s => `<tr class="click" data-s="${s.id}" data-st="${s.status}">
     <td><b>${C.esc(s.patients.full_name)}</b> ${s.emergency ? `<span class="badge" style="background:#fee2e2;color:#dc2626">🚨</span>` : ""}<br>
       <small class="muted">${C.esc(s.patients.uhid)} · ${dt(s.created_at)}</small><br>
-      <small>${(s.complaints || []).map(c => C.esc(BANK.complaints.find(x => x.id === c.id)?.name_en || c.id)).join(", ")}</small></td>
+      <small>${(s.complaints || []).map(c => C.esc(BANK.allComplaints.find(x => x.id === c.id)?.name_en || c.id)).join(", ")}</small></td>
     <td><span class="badge ${s.status === "completed" ? "pending" : ""}">${label[s.status]}</span></td></tr>`).join("")}</table>`
     : `<p class="muted">Abhi koi history nahi.</p>`}</div>`;
   pane.querySelectorAll("[data-s]").forEach(r => r.onclick = () =>
@@ -394,12 +396,12 @@ async function showReport(sid) {
       ${un.length ? `<p class="muted"><b>Not assessed / unknown:</b> ${un.map(C.esc).join("; ")}</p>` : ""}`;
   };
   const complaintBlocks = (s.complaints || []).map((c, i) => {
-    const k = BANK.complaints.find(x => x.id === c.id) || { name_en: c.id };
-    const qs = BANK.questions.filter(q => q.complaint_id === c.id);
+    const k = BANK.allComplaints.find(x => x.id === c.id) || { name_en: c.id };
+    const qs = Object.values(BANK.byId).filter(q => q.complaint_id === c.id);
     return `<h4>${i + 1}. ${C.esc(k.name_en)} — ${C.esc(c.duration || "duration ?")}${c.onset ? ", " + c.onset + " onset" : ""}${c.severity ? ", severity " + c.severity + "/10" : ""}${c.status ? ", " + ({ same: "unchanged", worse: "worsening", better: "improving" })[c.status] : ""}</h4>
       ${block(qs)}<p class="muted" style="font-size:11px">Ref: ${C.esc(k.source || "")}</p>`;
   }).join("");
-  const sec = name => BANK.questions.filter(q => !q.complaint_id && q.section === name);
+  const sec = name => Object.values(BANK.byId).filter(q => !q.complaint_id && q.section === name);
   const isDoc = C.me.role === "doctor";
   const bmi = s.height_cm && s.weight_kg ? (s.weight_kg / ((s.height_cm / 100) ** 2)).toFixed(1) : null;
   const relLbl = { reliable: "reliable", partly: "partly reliable", unreliable: "unreliable" };
@@ -416,7 +418,7 @@ async function showReport(sid) {
       ${redFlags.length ? `<div class="card alertbox"><b>🚩 Red flags</b><br>${redFlags.map(q => "• " + C.esc(q.red_flag_note || q.text_en)).join("<br>")}</div>` : ""}
 
       <h4>Chief complaints</h4>
-      <ol>${(s.complaints || []).map(c => `<li>${C.esc((BANK.complaints.find(x => x.id === c.id) || {}).name_en || c.id)} — ${C.esc(c.duration || "?")}</li>`).join("")}</ol>
+      <ol>${(s.complaints || []).map(c => `<li>${C.esc((BANK.allComplaints.find(x => x.id === c.id) || {}).name_en || c.id)} — ${C.esc(c.duration || "?")}</li>`).join("")}</ol>
       ${s.complaints?.[0]?.own_words ? `<p><i>In patient's words: “${C.esc(s.complaints[0].own_words)}”</i></p>` : ""}
 
       <h4>History of presenting illness</h4>${complaintBlocks || "<p class='muted'>—</p>"}

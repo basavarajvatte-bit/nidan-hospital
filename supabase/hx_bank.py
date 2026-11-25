@@ -13,7 +13,7 @@ COMPLAINTS, QUESTIONS = [], []
 
 
 def C(id, system, en, hi, mr, icon, ord, src):
-    COMPLAINTS.append(dict(id=id, system=system, name_en=en, name_hi=hi, name_mr=mr, icon=icon, ord=ord, source=src))
+    COMPLAINTS.append(dict(id=id, system=system, name_en=en, name_hi=hi, name_mr=mr, icon=icon, ord=ord, source=src, active=True))
 
 
 def O(v, en, hi, mr, ddx=None):
@@ -600,7 +600,7 @@ Q("ob_pregnant", None, "obstetric", 17, "choice", "Pregnancy status", "क्य
 
 # ------------------------------------------------------------------ SYSTEM MODULES (one file per body system)
 import pathlib as _pl
-for _f in ["hx_cvs.py", "hx_resp.py", "hx_git.py"]:
+for _f in ["hx_cvs.py", "hx_resp.py", "hx_git.py", "hx_cns.py"]:
     exec((_pl.Path(__file__).parent / _f).read_text(encoding="utf-8"))
 
 # Questions replaced by better ones (never deleted, only switched off)
@@ -608,6 +608,10 @@ RETIRED = {"cp_exertion": "replaced by cp_triggers + cp_relief (CVS phase)",
            "cp_meals": "replaced by cp_triggers + cp_relief (CVS phase)",
            "cp_posture": "replaced by cp_triggers/cp_relief options (CVS phase)",
            "br_occup": "replaced by br_occup_list (Respiratory phase)"}
+RETIRED_COMPLAINTS = {"neuro": "split into weakness / seizure / dizziness / numbness / syncope (CNS phase)"}
+for _c in COMPLAINTS:
+    if _c["id"] in RETIRED_COMPLAINTS:
+        _c["active"] = False
 for _q in QUESTIONS:
     if _q["id"] in RETIRED:
         _q["active"] = False
