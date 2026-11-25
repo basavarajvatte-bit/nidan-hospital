@@ -59,3 +59,11 @@ a{color:var(--teal);font-weight:600}
 .note{border-left:4px solid var(--amber);background:#fffbeb;padding:10px;border-radius:8px;margin-bottom:8px}
 .note.critical{border-color:var(--red);background:#fef2f2}
 .note button{margin-top:6px}
+.three{display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:8px}
+.abn{color:var(--red);font-weight:700}
+.abncard{border-color:#fca5a5;background:#fef2f2}
+.pcard{cursor:pointer}
+.struck td{text-decoration:line-through;opacity:.5}
+.scroll{overflow-x:auto}
+.order{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px;display:flex;flex-direction:column;gap:8px}
+details{margin-top:10px}
