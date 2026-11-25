@@ -13,7 +13,7 @@ const ROLES = {
 
 // Every module, who can see it, and which phase builds it.
 const MODULES = [
-  { id: "dashboard",  ico: "📊", name: "Doctor Dashboard", roles: ["doctor", "admin"], phase: 4 },
+  { id: "dashboard",  ico: "📊", name: "Doctor Dashboard", roles: ["doctor", "admin"], ready: true, file: "./dashboard.js" },
   { id: "reception",  ico: "🧾", name: "Reception",        roles: ["doctor", "admin", "receptionist"], ready: true, file: "./reception.js" },
   { id: "nursing",    ico: "🩺", name: "Nursing Sister",   roles: ["doctor", "admin", "nurse"], phase: 5 },
   { id: "nidan",      ico: "❓", name: "Nidan Questions",  roles: ["doctor", "nurse"], phase: 6 },

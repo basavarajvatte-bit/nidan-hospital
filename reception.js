@@ -285,3 +285,6 @@ function wirePatientLinks(root) {
 function alertCard(root, text) {
   const d = document.createElement("div"); d.className = "card msg err"; d.textContent = text; root.prepend(d);
 }
+
+// Open a patient's page directly (used by other modules, e.g. dashboard)
+export function openPatient(ctx, id) { render(ctx, "search"); showPatient(id); }

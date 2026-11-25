@@ -11,7 +11,7 @@ AI-powered hospital management app, with a team of AI agents (Sister, Reception,
 1. ✅ Base app, login, roles, audit log
 2. ✅ Database (all core tables, per-hospital isolation, tamper-proof records)
 3. ✅ Reception: registration, UHID, duplicate check, search, OPD, IPD admit/discharge, beds
-4. Doctor dashboard
+4. ✅ Doctor dashboard (15 live numbers, OPD line, alerts)
 5. Nursing Sister: vitals, notes, abnormal alerts
 6. Nidan triage questions + medical book PDF
 7. Agent engine: registry, tasks, logs, permissions, approvals
