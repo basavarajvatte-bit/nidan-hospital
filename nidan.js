@@ -233,8 +233,9 @@ function readDetails(chosen) {
 }
 
 // Which questions apply to this patient (sex/age), in clinical order
-function applies(q) {
-  const a = q.applies_to; if (!a) return true;
+function applies(q) { return fits(q.applies_to); }
+function fits(a) {
+  if (!a) return true;
   if (a.sex && S.patient.gender && a.sex !== S.patient.gender) return false;
   if (a.sex && !S.patient.gender) return true;
   if (a.min_age != null && S.age != null && S.age < a.min_age) return false;
@@ -283,16 +284,17 @@ function askNext() {
   const shown = S.flow.filter(id => visible(BANK.byId[id]));
   const pos = shown.indexOf(q.id) + 1;
   const comp = q.complaint_id ? BANK.complaints.find(c => c.id === q.complaint_id) : null;
+  const OPTS = (q.options || []).filter(o => fits(o.only));
   const cur = S.answers[q.id];
   let body = "";
   if (q.qtype === "yesno") {
     body = `<div class="bigbtns">${["yes", "no", "unknown"].map(k => `<button class="ans ${cur === k ? "on" : ""}" data-v="${k}">${ST(k)}</button>`).join("")}</div>`;
   } else if (q.qtype === "choice") {
-    body = `<div class="opts">${q.options.map(o => `<button class="ans ${cur === o.v ? "on" : ""}" data-v="${C.esc(o.v)}">${C.esc(OT(o))}<br><small class="muted">${C.esc(o.en)}</small></button>`).join("")}
+    body = `<div class="opts">${OPTS.map(o => `<button class="ans ${cur === o.v ? "on" : ""}" data-v="${C.esc(o.v)}">${C.esc(OT(o))}<br><small class="muted">${C.esc(o.en)}</small></button>`).join("")}
       <button class="ans ghost ${cur === "unknown" ? "on" : ""}" data-v="unknown">${ST("unknown")}</button></div>`;
   } else if (q.qtype === "multi") {
     const sel = Array.isArray(cur) ? cur : [];
-    body = `<div class="opts">${q.options.map(o => `<label class="chk"><input type="checkbox" value="${C.esc(o.v)}" ${sel.includes(o.v) ? "checked" : ""}> ${C.esc(OT(o))} <small class="muted">${C.esc(o.en)}</small></label>`).join("")}</div>
+    body = `<div class="opts">${OPTS.map(o => `<label class="chk"><input type="checkbox" value="${C.esc(o.v)}" ${sel.includes(o.v) ? "checked" : ""}> ${C.esc(OT(o))} <small class="muted">${C.esc(o.en)}</small></label>`).join("")}</div>
       <div class="row" style="margin-top:8px"><button id="msave">Aage →</button><button class="ghost" id="mnone">${S.lang === "mr" ? "यापैकी काहीही नाही" : S.lang === "en" ? "None of these" : "इनमें से कुछ नहीं"}</button>
       <button class="ghost" id="munk">${ST("unknown")}</button></div>`;
   } else {

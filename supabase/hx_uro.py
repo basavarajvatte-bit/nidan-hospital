@@ -22,12 +22,12 @@ Q("ur_luts", "urinary", "hopi", 8, "multi", "Passing urine — any of these?", "
 Q("ur_nocturia_n", "urinary", "hopi", 9, "number", "How many times do you get up at night to pass urine?", "रात में पेशाब के लिए कितनी बार उठते हैं?",
   "रात्री लघवीसाठी किती वेळा उठता?", term="Nocturia (times/night)", show={"q": "ur_symptoms", "has": "night"}, src=f"{UR}, p356")
 Q("ur_uti_risk", "urinary", "risk", 10, "multi", "Risk factors", "इनमें से कुछ?", "यापैकी काही?", term="UTI / complicated UTI risk", opts=[
-    O("pregnant", "Pregnant", "गर्भवती", "गर्भवती", ["Cystitis / UTI"]),
+    O("pregnant", "Pregnant", "गर्भवती", "गर्भवती", ["Cystitis / UTI"], only={"sex": "female"}),
     O("dm", "Diabetes", "शुगर", "मधुमेह", ["Cystitis / UTI", "Pyelonephritis"]),
     O("catheter", "Catheter / recent urine-pipe procedure", "कैथेटर / हाल में पेशाब की नली का प्रोसीजर", "कॅथेटर / अलीकडे मूत्रनलिकेची प्रक्रिया", ["Cystitis / UTI"]),
     O("stones", "Kidney stones", "किडनी की पथरी", "मुतखडा", ["Pyelonephritis", "Renal colic / stone"]),
-    O("male", "Male with urine infection (always investigate)", "पुरुष को पेशाब का इन्फेक्शन", "पुरुषाला लघवीचा संसर्ग", ["Prostatitis", "Prostate enlargement"]),
-    O("menopause", "After menopause", "माहवारी बंद होने के बाद", "रजोनिवृत्तीनंतर", ["Cystitis / UTI"])],
+    O("male", "Male with urine infection (always investigate)", "पुरुष को पेशाब का इन्फेक्शन", "पुरुषाला लघवीचा संसर्ग", ["Prostatitis", "Prostate enlargement"], only={"sex": "male"}),
+    O("menopause", "After menopause", "माहवारी बंद होने के बाद", "रजोनिवृत्तीनंतर", ["Cystitis / UTI"], only={"sex": "female"})],
   src=LU)
 Q("ur_child_cry", "urinary", "hopi", 11, "yesno", "(Child) Cries while passing urine / fever without other cause?", "(बच्चा) पेशाब करते समय रोता है / बिना कारण बुखार?",
   "(मूल) लघवी करताना रडते / विनाकारण ताप?", term="Paediatric UTI clues", ddx=["Cystitis / UTI"], applies={"max_age": 12}, src=f"{UR}, p355")
@@ -60,7 +60,7 @@ Q("hu_gn", "haematuria", "associated", 5, "multi", "Along with blood in urine", 
     O("high_bp", "New high BP / headache", "नया हाई बीपी / सिर दर्द", "नवीन उच्च रक्तदाब / डोकेदुखी", ["Glomerulonephritis"])],
   src=f"{UR}, p356")
 Q("hu_mimics", "haematuria", "hopi", 6, "multi", "Other explanations", "दूसरे कारण", "इतर कारणे", term="Mimics / systemic causes", opts=[
-    O("periods", "During periods", "माहवारी के दौरान", "पाळीच्या काळात", ["Menstrual contamination"]),
+    O("periods", "During periods", "माहवारी के दौरान", "पाळीच्या काळात", ["Menstrual contamination"], only={"sex": "female"}),
     O("beetroot_drugs", "Beetroot / rifampicin (TB medicine)", "चुकंदर / रिफ़ैम्पिसिन (टीबी दवा)", "बीट / रिफॅम्पिसिन (टीबी औषध)", ["Discoloured urine (not blood)"]),
     O("exercise", "After heavy exercise / long march", "भारी कसरत / लंबी चाल के बाद", "जड व्यायाम / लांब चालीनंतर", ["Exercise-induced haematuria / myoglobinuria"]),
     O("thinner", "Blood thinners / easy bruising", "खून पतला करने की दवा / आसानी से नील", "रक्त पातळ करण्याचे औषध / सहज काळे-निळे", ["Anticoagulant-related bleeding", "Bleeding disorder"]),
@@ -190,8 +190,8 @@ Q("st_privacy", "sti", "hopi", 1, "yesno", "Patient is being asked in private, c
   "क्या मरीज़ से अकेले में पूछा जा रहा है और इन सवालों के लिए अनुमति ली है?", "रुग्णाला एकांतात विचारले जात आहे आणि या प्रश्नांसाठी परवानगी घेतली आहे का?",
   term="Privacy / consent confirmed", src=f"{ST} (confidential, non-judgemental)")
 Q("st_symptoms", "sti", "hopi", 2, "multi", "Which problems?", "कौन-सी तकलीफ़?", "कोणता त्रास?", term="Genitourinary symptoms", show={"q": "st_privacy", "eq": "yes"}, opts=[
-    O("discharge_urethra", "Discharge from urine pipe (men)", "पेशाब की नली से स्राव (पुरुष)", "मूत्रनलिकेतून स्राव (पुरुष)", ["Gonorrhoea / chlamydia (urethritis)"]),
-    O("discharge_vagina", "Abnormal vaginal discharge / smell", "योनि से असामान्य स्राव / बदबू", "योनीतून असामान्य स्राव / दुर्गंध", ["Vaginal infection / STI", "Pelvic inflammatory disease"]),
+    O("discharge_urethra", "Discharge from urine pipe (men)", "पेशाब की नली से स्राव (पुरुष)", "मूत्रनलिकेतून स्राव (पुरुष)", ["Gonorrhoea / chlamydia (urethritis)"], only={"sex": "male"}),
+    O("discharge_vagina", "Abnormal vaginal discharge / smell", "योनि से असामान्य स्राव / बदबू", "योनीतून असामान्य स्राव / दुर्गंध", ["Vaginal infection / STI", "Pelvic inflammatory disease"], only={"sex": "female"}),
     O("ulcer_painful", "Painful genital sore(s)", "गुप्तांग पर दर्दनाक छाले", "गुप्तांगावर दुखरे फोड", ["Genital herpes", "Chancroid"]),
     O("ulcer_painless", "Painless genital sore", "गुप्तांग पर बिना दर्द का घाव", "गुप्तांगावर न दुखणारी जखम", ["Syphilis"]),
     O("warts", "Warts / growths", "मस्से / गाँठें", "चामखीळ / गाठी", ["Genital warts"]),

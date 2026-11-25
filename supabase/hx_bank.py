@@ -16,10 +16,12 @@ def C(id, system, en, hi, mr, icon, ord, src):
     COMPLAINTS.append(dict(id=id, system=system, name_en=en, name_hi=hi, name_mr=mr, icon=icon, ord=ord, source=src, active=True))
 
 
-def O(v, en, hi, mr, ddx=None):
+def O(v, en, hi, mr, ddx=None, only=None):
     o = {"v": v, "en": en, "hi": hi, "mr": mr}
     if ddx:
         o["ddx"] = ddx
+    if only:  # show this option only to e.g. {"sex": "female"} / {"min_age": 12}
+        o["only"] = only
     return o
 
 
@@ -600,7 +602,7 @@ Q("ob_pregnant", None, "obstetric", 17, "choice", "Pregnancy status", "क्य
 
 # ------------------------------------------------------------------ SYSTEM MODULES (one file per body system)
 import pathlib as _pl
-for _f in ["hx_cvs.py", "hx_resp.py", "hx_git.py", "hx_cns.py", "hx_uro.py"]:
+for _f in ["hx_cvs.py", "hx_resp.py", "hx_git.py", "hx_cns.py", "hx_uro.py", "hx_loco.py"]:
     exec((_pl.Path(__file__).parent / _f).read_text(encoding="utf-8"))
 
 # Questions replaced by better ones (never deleted, only switched off)
