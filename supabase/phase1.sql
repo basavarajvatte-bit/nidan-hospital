@@ -135,6 +135,11 @@ create policy "doctor/admin read audit" on public.audit_logs
   using (hospital_id = public.my_hospital() and public.my_role() in ('doctor','admin'));
 -- No insert/update/delete policies on audit_logs: app can never edit it.
 
+-- Table access for logged-in users (rows are still filtered by the rules above)
+grant usage on schema public to authenticated;
+grant select on public.hospitals, public.profiles, public.audit_logs to authenticated;
+revoke all on public.hospitals, public.profiles, public.audit_logs from anon;
+
 revoke all on function public.set_staff_role(uuid, text) from public, anon;
 grant execute on function public.set_staff_role(uuid, text) to authenticated;
 grant execute on function public.my_hospital() to authenticated;
