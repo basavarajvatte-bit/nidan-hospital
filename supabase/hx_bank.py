@@ -151,7 +151,7 @@ Q("fv_immuno", "fever", "risk", 12, "multi", "Risk factors for serious infection
 # ---------- CHEST PAIN  (Ch 13 p189-192, Ch 12 p169)
 CP = f"{H}, Ch 13, p189-192"
 Q("cp_site", "chest_pain", "hopi", 1, "choice", "Where is the pain?", "दर्द कहाँ है?", "दुखणे कुठे आहे?", term="Site", opts=[
-    O("central", "Centre of chest (behind breastbone)", "छाती के बीच में", "छातीच्या मध्यभागी", ["Angina / ACS", "Pericarditis", "Reflux"]),
+    O("central", "Centre of chest (behind breastbone)", "छाती के बीच में", "छातीच्या मध्यभागी", ["Angina / ACS", "Pericarditis", "Reflux / GORD"]),
     O("side", "One side of chest", "छाती के एक तरफ", "छातीच्या एका बाजूला", ["Pleurisy", "Pneumothorax", "Musculoskeletal"]),
     O("back", "Between shoulder blades / back", "पीठ में / कंधों के बीच", "पाठीत / खांद्यांमध्ये", ["Aortic dissection"]),
     O("upper_abd", "Upper abdomen / below ribs", "पेट के ऊपरी हिस्से में", "पोटाच्या वरच्या भागात", ["Peptic ulcer", "Biliary", "Inferior MI"])],

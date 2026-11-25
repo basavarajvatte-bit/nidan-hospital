@@ -67,3 +67,33 @@ a{color:var(--teal);font-weight:600}
 .scroll{overflow-x:auto}
 .order{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px;display:flex;flex-direction:column;gap:8px}
 details{margin-top:10px}
+.pick{display:block;width:100%;text-align:left;background:#fff;color:var(--text);border:1px solid var(--line);margin-top:8px;font-weight:400}
+.click{cursor:pointer}
+.langb{background:#fff;color:var(--text);border:1px solid var(--line)}
+.langb.on,.chip.on,.ans.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.chip{background:#fff;color:var(--text);border:1px solid var(--line);font-weight:600;font-size:14px}
+.chip small,.ans small{font-weight:400;opacity:.8}
+.cdet{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px}
+.steps{display:flex;gap:4px;margin-top:8px}
+.steps span{flex:1;text-align:center;font-size:11px;padding:4px;border-radius:6px;background:#e2e8f0;color:var(--muted)}
+.steps span.on{background:var(--teal);color:#fff}
+.progress{height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden}
+.progress div{height:100%;background:var(--teal)}
+.qcard.rf{border-color:#fca5a5}
+.qtext{font-size:21px;font-weight:600;margin:8px 0;line-height:1.35}
+.bigbtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.bigbtns .ans{padding:18px 8px;font-size:18px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.ans{background:#fff;color:var(--text);border:1px solid var(--line);text-align:left}
+.bigbtns .ans{text-align:center}
+.chk{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px;color:var(--text);font-size:16px;margin:0}
+.chk input{width:22px;height:22px;flex:none}
+.sq{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.yn{background:#fff;color:var(--text);border:1px solid var(--line);padding:10px 14px}
+.yn.on{background:var(--teal);color:#fff}
+.yn.red{background:var(--red);border-color:var(--red)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:12px 18px;border-radius:12px;z-index:99}
+.report h4{margin:16px 0 6px;color:var(--teal)}
+.report p{margin:4px 0;font-size:14px}
+@media print{.topbar,.back,.tabs,button,#pane>.row{display:none!important}.card{border:none}body{background:#fff}}
