@@ -197,7 +197,13 @@ async function showPatient(id, note = "") {
   };
   if ($("ad")) $("ad").onclick = async () => {
     const { data: beds } = await C.sb.from("beds").select("id, label, rooms(name)").eq("status", "available").order("label");
-    if (!beds?.length) { act.innerHTML = `<p class="msg err">Koi bed khali nahi hai. "Beds" tab mein dekho.</p>`; return; }
+    if (!beds?.length) {
+      const { count } = await C.sb.from("beds").select("id", { count: "exact", head: true });
+      act.innerHTML = `<p class="msg err">${count ? "Abhi saare bed bhare hain ya safai mein hain." :
+        "Abhi tak koi ward/bed bana hi nahi hai."}</p><button class="full" id="gobeds">🛏️ Beds kholo</button>`;
+      $("gobeds").onclick = () => render(C, "beds");
+      return;
+    }
     act.innerHTML = `<form id="af"><label>Bed chuno</label><select id="bd">${beds.map(b =>
         `<option value="${b.id}">${C.esc(b.label)} (${C.esc(b.rooms?.name || "")})</option>`).join("")}</select>
       <label>Doctor</label><select id="dr">${docOpts}</select>
