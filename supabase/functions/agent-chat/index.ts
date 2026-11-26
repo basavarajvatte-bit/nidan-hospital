@@ -66,13 +66,11 @@ function toolDefs(ctx: any) {
   if (has("find_patient")) T.push({ name: "find_patient", description: "Patient ko naam, UHID ya phone se dhoondo. patient_id milta hai.", parameters: obj({ query: { type: "string", description: "naam / UHID / phone ka hissa" } }, ["query"]) });
   if (has("latest_vitals")) T.push({ name: "latest_vitals", description: "Ek patient ke aakhri 5 vitals. Pehle find_patient se patient_id lo.", parameters: obj({ patient_id: { type: "string" } }, ["patient_id"]) });
   if (has("list_beds")) T.push({ name: "list_beds", description: "Saare bed aur unka status (bed_id ke saath).", parameters: obj() });
+  // every action brings its own input fields (agent_actions.params), so new actions need no change here
   for (const a of ctx.actions || []) {
     const id = a.id.replace(".", "__");
-    if (a.id === "followup.schedule") T.push({ name: id, description: `${a.title}: ${a.description}. Approval queue mein jaata hai.`,
-      parameters: obj({ patient_id: { type: "string" }, due_on: { type: "string", description: "YYYY-MM-DD" }, reason: { type: "string" } }, ["patient_id", "due_on"]) });
-    else if (a.id === "operations.bed_status") T.push({ name: id, description: `${a.title}. Approval queue mein jaata hai.`,
-      parameters: obj({ bed_id: { type: "string" }, status: { type: "string", enum: ["available", "cleaning", "blocked"] } }, ["bed_id", "status"]) });
-    else if (a.kind === "check") T.push({ name: id, description: `${a.title}: ${a.description}`, parameters: obj() });
+    const note = a.risk === "low" ? "" : " Approval queue mein jaata hai.";
+    T.push({ name: id, description: `${a.title}: ${a.description}.${note}`, parameters: a.params || obj() });
   }
   return T;
 }
@@ -113,7 +111,10 @@ function systemPrompt(ctx: any, agentId: string) {
   const extra = agentId === "boss"
     ? "\n- Aap Boss AI ho: doctor ko poore hospital ki sthiti batate ho. Zaroorat ho to boss__daily_report ya alag department ke check chalao, aur sabse zaroori baat pehle batao."
     : "";
-  return `Aap ${who} ho. Aap staff (${ctx.role}) se baat kar rahe ho. Aaj ki date ${today} hai (India).
+  const days = ["Ravivar", "Somvar", "Mangalvar", "Budhvar", "Guruvar", "Shukravar", "Shanivar"];
+  const opd = ctx.opd ? `\nOPD ka time: subah ${ctx.opd.morning}${ctx.opd.evening && !ctx.opd.evening.includes("null") ? ", shaam " + ctx.opd.evening : ""}; ek slot ${ctx.opd.slot_minutes} minute; chhutti: ${(ctx.opd.weekly_off || []).map((d: number) => days[d]).join(", ") || "koi nahi"}.` : "";
+  const weekday = new Date().toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", weekday: "long" });
+  return `Aap ${who} ho. Aap staff (${ctx.role}) se baat kar rahe ho. Aaj ki date ${today} (${weekday}) hai (India).${opd}
 NIYAM:
 - Jawab chhota, saaf, Hinglish (Roman Hindi) mein do. Staff Marathi ya English mein likhe to usi bhasha mein.
 - Hospital ka koi bhi data sirf tools se lo. Andaaza ya banaya hua number kabhi mat do. Tool fail ho to saaf batao.
@@ -124,6 +125,7 @@ NIYAM:
 - Patient ka naam / phone / UHID codes (P1, PH1, U1) mein dikhega — jawab mein wahi code likho, app asli naam dikha dega.
 - Jab bhi kisi patient ka zikr karo, naam ke saath uska UHID code (jaise U1) bhi zaroor likho, taaki staff us par click karke poori file dekh sake.
 - patient_id ya bed_id chahiye to pehle find_patient / list_beds chalao; ek se zyada patient mile to staff se poochho kaun sa.
+- Appointment lagane se pehle: patient find_patient se pakka karo, khali slot dekho, phir lagao. "Kal", "parso", "Somvar" jaise shabdon ko sahi YYYY-MM-DD mein badlo.
 - Aap AI ho, galti ho sakti hai; zaroori baat doctor se confirm karwayein.${extra}`;
 }
 
