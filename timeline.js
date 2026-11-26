@@ -1,5 +1,7 @@
 // Vatte Hospital OS — Patient timeline: everything about one patient, from registration to today.
 // Each section is read with the user's own login, so every role sees only what it is allowed to see.
+const tel = ph => { const d = String(ph || "").replace(/\D/g, ""); return d.length === 10 ? "+91" + d : d ? "+" + d.replace(/^0+/, "") : ""; };
+const callBtn = ph => tel(ph) ? `<a class="callbtn" href="tel:${tel(ph)}" onclick="event.stopPropagation()">📞 Call</a>` : "";
 let C, P, ITEMS = [], FILTER = "all", BACK = null;
 const $ = id => document.getElementById(id);
 const dt = t => t ? new Date(t).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
@@ -88,8 +90,8 @@ async function load() {
   const age = P.age_years != null ? P.age_years + " saal" : "";
   $("tl").innerHTML = `
     <div class="card">
-      <h2 style="margin:0">${C.esc(P.full_name)}</h2>
-      <p class="muted" style="margin:4px 0">${C.esc(P.uhid)} · ${C.esc(P.gender || "")} ${age ? "· " + age : ""} ${P.phone ? "· 📞 " + C.esc(P.phone) : ""} ${P.blood_group ? "· 🩸 " + C.esc(P.blood_group) : ""}</p>
+      <div class="row" style="justify-content:space-between;gap:6px"><h2 style="margin:0">${C.esc(P.full_name)}</h2>${callBtn(P.phone)}</div>
+      <p class="muted" style="margin:4px 0">${C.esc(P.uhid)} · ${C.esc(P.gender || "")} ${age ? "· " + age : ""} ${P.phone ? "· " + C.esc(P.phone) : ""} ${P.blood_group ? "· 🩸 " + C.esc(P.blood_group) : ""}</p>
       ${P.allergies ? `<p class="msg err" style="margin:4px 0">⚠️ Allergy: ${C.esc(P.allergies)}</p>` : ""}
       <p style="margin:4px 0">${now ? `🛏️ <b>Abhi admit</b> — ${C.esc(now.beds?.rooms?.name || "")} ${C.esc(now.beds?.label || "")} (${dt(now.admitted_at)} se)` : "Abhi admit nahi"}</p>
       ${lastV ? `<p class="muted" style="margin:4px 0">Aakhri vitals: ${dt(lastV.recorded_at)}</p>` : ""}

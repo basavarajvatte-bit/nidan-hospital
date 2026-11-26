@@ -1,4 +1,6 @@
 // Vatte Hospital OS — Phase 3: Reception (registration, duplicate check, search, OPD, IPD, beds)
+const tel = ph => { const d = String(ph || "").replace(/\D/g, ""); return d.length === 10 ? "+91" + d : d ? "+" + d.replace(/^0+/, "") : ""; };
+const callBtn = ph => tel(ph) ? `<a class="callbtn" href="tel:${tel(ph)}" onclick="event.stopPropagation()">📞 Call</a>` : "";
 let C; // context: { sb, me, app, esc, goHome }
 
 const KIND = { opd: "OPD", ipd: "IPD (Admit)", emergency: "Emergency" };
@@ -133,7 +135,7 @@ function showSearch() {
     if (error) { $("res").textContent = error.message; return; }
     $("res").innerHTML = data.length ? `<table>${data.map(p => `<tr>
       <td><a href="#" data-p="${p.id}">${C.esc(p.full_name)}</a><br><small class="muted">${C.esc(p.uhid)} · ${C.esc(p.gender || "")}</small></td>
-      <td>${C.esc(p.phone || "")}</td></tr>`).join("")}</table>` : `<p class="muted">Koi nahi mila.</p>`;
+      <td>${C.esc(p.phone || "")} ${callBtn(p.phone)}</td></tr>`).join("")}</table>` : `<p class="muted">Koi nahi mila.</p>`;
     wirePatientLinks($("res"));
   };
   $("go").onclick = run;
@@ -160,7 +162,7 @@ async function showPatient(id, note = "") {
   pane.innerHTML = `
     ${note ? `<div class="card msg ok">${C.esc(note)}</div>` : ""}
     <div class="card">
-      <h3>${C.esc(p.full_name)} <span class="badge">${C.esc(p.uhid)}</span></h3>
+      <h3>${C.esc(p.full_name)} <span class="badge">${C.esc(p.uhid)}</span> ${callBtn(p.phone)}</h3>
       <p>${C.esc(p.gender || "")} · ${age} saal · ${C.esc(p.phone || "mobile nahi")}${p.blood_group ? " · " + C.esc(p.blood_group) : ""}</p>
       ${p.allergies ? `<p class="msg err">⚠️ Allergy: ${C.esc(p.allergies)}</p>` : ""}
       ${p.address ? `<p class="muted">${C.esc(p.address)}</p>` : ""}

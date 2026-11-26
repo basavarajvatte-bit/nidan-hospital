@@ -1,4 +1,6 @@
 // Vatte Hospital OS — Phase 5: Nursing Sister (vitals, alerts, orders, medication, notes, handover)
+const tel = ph => { const d = String(ph || "").replace(/\D/g, ""); return d.length === 10 ? "+91" + d : d ? "+" + d.replace(/^0+/, "") : ""; };
+const callBtn = ph => tel(ph) ? `<a class="callbtn" href="tel:${tel(ph)}" onclick="event.stopPropagation()">📞 Call</a>` : "";
 let C;
 const $ = id => document.getElementById(id);
 const dt = t => new Date(t).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -87,7 +89,7 @@ function wireSearch() {
     if (error) { $("nres").textContent = error.message; return; }
     $("nres").innerHTML = data.length ? `<table style="margin-top:8px">${data.map(p => `<tr><td>
       <a href="#" data-sp="${p.id}">${C.esc(p.full_name)}</a><br><small class="muted">${C.esc(p.uhid)} · ${p.age_years ?? "?"} saal</small></td>
-      <td>${C.esc(p.phone || "")}</td></tr>`).join("")}</table>` : `<p class="muted">Koi nahi mila.</p>`;
+      <td>${C.esc(p.phone || "")} ${callBtn(p.phone)}</td></tr>`).join("")}</table>` : `<p class="muted">Koi nahi mila.</p>`;
     $("nres").querySelectorAll("[data-sp]").forEach(a => a.onclick = e => { e.preventDefault(); showPatient(a.dataset.sp, null); });
   };
   $("ngo").onclick = run;

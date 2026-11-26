@@ -1,5 +1,7 @@
 // Vatte Hospital OS — Home search: type a patient's or an employee's name and open their full history.
 // Patients → full patient file (timeline.js). Employees → full staff history (doctor / admin / HR only).
+const tel = ph => { const d = String(ph || "").replace(/\D/g, ""); return d.length === 10 ? "+91" + d : d ? "+" + d.replace(/^0+/, "") : ""; };
+const callBtn = ph => tel(ph) ? `<a class="callbtn" href="tel:${tel(ph)}" onclick="event.stopPropagation()">📞 Call</a>` : "";
 let C;
 const $ = id => document.getElementById(id);
 const dt = t => t ? new Date(t).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
@@ -37,8 +39,10 @@ async function run() {
   if (kind === "patient") {
     const { data, error } = await C.sb.rpc("search_patients", { q });
     if (error) { box.innerHTML = `<p class="msg err">${C.esc(error.message)}</p>`; return; }
-    box.innerHTML = data.length ? head(data) + data.map(p => `<button class="ghost full" style="text-align:left;margin-top:6px" data-p="${p.id}">
-        🧑‍🦱 <b>${C.esc(p.full_name)}</b>${tag(p)} <small class="muted">· ${C.esc(p.uhid)} · ${C.esc(p.gender || "")} ${p.age ?? ""} ${p.phone ? "· " + C.esc(p.phone) : ""}</small></button>`).join("")
+    box.innerHTML = data.length ? head(data) + data.map(p => `<div class="row" style="gap:6px;margin-top:6px;align-items:center">
+        <button class="ghost" style="text-align:left;flex:1" data-p="${p.id}">
+        🧑‍🦱 <b>${C.esc(p.full_name)}</b>${tag(p)} <small class="muted">· ${C.esc(p.uhid)} · ${C.esc(p.gender || "")} ${p.age ?? ""} ${p.phone ? "· " + C.esc(p.phone) : ""}</small></button>
+        ${callBtn(p.phone)}</div>`).join("")
       : `<p class="muted" style="margin:6px 0">"${C.esc(q)}" ya isse milta-julta koi patient hamare yahan nahi hai.</p>`;
     box.querySelectorAll("[data-p]").forEach(b => b.onclick = () =>
       import("./timeline.js?v=" + (window.APP_VERSION || "")).then(m => m.render(C, b.dataset.p, C.goHome)));
@@ -99,7 +103,7 @@ async function openEmployee(key) {
   $("emp").innerHTML = `
     <div class="card"><h2 style="margin:0">👩‍⚕️ ${C.esc(name)}</h2>
       <p class="muted" style="margin:4px 0">${prof ? C.esc(ROLE[prof.role] || prof.role) + " · app par " + dt(prof.created_at) + " se" : "App account nahi"}
-      ${sm ? `<br>${C.esc(sm.designation || "")} ${sm.departments?.name ? "· " + C.esc(sm.departments.name) : ""} ${sm.phone ? "· 📞 " + C.esc(sm.phone) : ""}
+      ${sm ? `<br>${C.esc(sm.designation || "")} ${sm.departments?.name ? "· " + C.esc(sm.departments.name) : ""} ${sm.phone ? "· " + C.esc(sm.phone) + " " + callBtn(sm.phone) : ""}
       ${sm.joined_on ? "· Joined " + C.esc(sm.joined_on) : ""} ${sm.active === false ? "· ❌ Ab kaam par nahi" : ""}` : ""}</p></div>
     ${sec("📊 Kaam ka hisaab (aakhri 200 entries)", Object.keys(counts).length ? `<p style="margin:0">${Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${C.esc(k)}: <b>${v}</b>`).join(" · ")}</p>` : empty)}
     ${sec(`🗓️ Attendance (aakhri ${A.length} din${A.length ? ", haazir " + present : ""})`, A.length ? `<div style="overflow-x:auto"><table><tr><th>Din</th><th>Status</th><th>Shift</th><th>In / Out</th></tr>${A.map(a =>

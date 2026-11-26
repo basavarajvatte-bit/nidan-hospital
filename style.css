@@ -98,3 +98,8 @@ details{margin-top:10px}
 .report p{margin:4px 0;font-size:14px}
 @media print{.topbar,.back,.tabs,button,#pane>.row{display:none!important}.card{border:none}body{background:#fff}}
 .sysname{font-size:12px;font-weight:700;color:var(--teal);text-transform:uppercase;margin:12px 0 6px}
+
+/* one-tap phone call button */
+.callbtn { display:inline-flex; align-items:center; gap:4px; padding:6px 12px; border-radius:999px; background:#16a34a; color:#fff !important;
+  font-weight:600; font-size:14px; text-decoration:none; white-space:nowrap; line-height:1.2; }
+.callbtn:active { background:#15803d; }

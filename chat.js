@@ -119,7 +119,8 @@ function linkify(html, people = []) {
   for (const p of people) { if (p.name) map.set(C.esc(p.name), p.uhid); if (p.uhid) map.set(C.esc(p.uhid), p.uhid); }
   const names = [...map.keys()].sort((x, y) => y.length - x.length).map(s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
   const re = new RegExp([...names, "\\b[A-Z]{2}\\d{8}\\b"].join("|"), "g");
-  return html.replace(re, m => `<a href="#" data-uhid="${map.get(m) || m}" style="color:#0f766e;font-weight:600;text-decoration:underline">${m}</a>`);
+  return html.replace(re, m => `<a href="#" data-uhid="${map.get(m) || m}" style="color:#0f766e;font-weight:600;text-decoration:underline">${m}</a>`)
+    .replace(/(^|[^\w>])([6-9]\d{9})\b/g, (_, pre, ph) => `${pre}<a class="callbtn" style="padding:2px 8px;font-size:13px" href="tel:+91${ph}">📞 ${ph}</a>`);
 }
 
 function bubble(role, text, extra = "", people = []) {

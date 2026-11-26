@@ -180,7 +180,7 @@ function items(v) {
     if (v.length === 1 && !v[0].patient && !v[0].medicine && !v[0].title) return kv(v[0]);
     const cols = [...new Set(v.flatMap(o => Object.keys(o)))].filter(k => !HIDE.has(k));
     return `<div style="overflow-x:auto"><table><tr>${cols.map(k => `<th>${C.esc(KEYS[k] || k)}</th>`).join("")}</tr>${v.map(o =>
-      `<tr>${cols.map(k => `<td>${k === "status" ? (STATUS[o[k]] || cell(o[k])) : cell(o[k])}</td>`).join("")}</tr>`).join("")}</table></div>`;
+      `<tr>${cols.map(k => `<td>${k === "status" ? (STATUS[o[k]] || cell(o[k])) : k === "phone" && tel(o[k]) ? `<a class="callbtn" href="tel:${tel(o[k])}">📞 ${C.esc(o[k])}</a>` : cell(o[k])}</td>`).join("")}</tr>`).join("")}</table></div>`;
   }
   if (v && typeof v === "object") return Object.entries(v).map(([k, x]) =>
     `<div style="margin-top:6px"><b>${C.esc(KEYS[k] || k.replace(/_/g, " "))}</b>${items(x) || " <small class='muted'>— kuch nahi</small>"}</div>`).join("");
@@ -188,6 +188,7 @@ function items(v) {
 }
 const kv = o => { const e = Object.entries(o).filter(([k]) => !HIDE.has(k)); return e.length ? `<p>${e.map(([k, x]) => `${C.esc(KEYS[k] || k)}: <b>${cell(x)}</b>`).join(" · ")}</p>` : ""; };
 const cell = x => x === true ? "⚠️ Haan" : x === false ? "✓" : x == null ? "—" : C.esc(String(x));
+const tel = ph => { const d = String(ph || "").replace(/\D/g, ""); return d.length === 10 ? "+91" + d : d ? "+" + d.replace(/^0+/, "") : ""; };
 
 // ---------------------------------------------------------------- approvals (doctor / admin)
 async function showApprovals() {
