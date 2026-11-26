@@ -104,6 +104,13 @@ function alertIn(agentId, msg, ok = false) {
 
 async function startAction(id) {
   const x = ACTIONS.find(a => a.id === id);
+  if (id === "pharmacy.find_medicine") {
+    const o0 = $("out_" + x.agent_id);
+    o0.innerHTML = `<div class="card" style="margin-top:8px"><label>Dawa ka naam</label><input id="fmq" placeholder="Jaise: paracetamol">
+      <button class="full" id="fmgo">🔎 Dhoondo</button></div>`;
+    $("fmgo").onclick = () => submit(x, { query: $("fmq").value.trim() });
+    return;
+  }
   if (x.kind === "check") return submit(x, {});
   const o = $("out_" + x.agent_id);
   o.innerHTML = `<div class="card" style="background:#fffbeb;border-color:#fde68a;margin-top:8px">
@@ -138,6 +145,10 @@ async function startAction(id) {
       <label>Naya status</label><select id="bs"><option value="cleaning">Safai (cleaning)</option><option value="blocked">Band (blocked)</option><option value="available">Khali (available)</option></select>
       <button class="full" id="bgo">Approval ke liye bhejo</button>` : "<p class='muted'>Koi khali / safai wala bed nahi. (Bhare bed ka status agent nahi badalta.)</p>";
     if ($("bgo")) $("bgo").onclick = () => submit(x, { bed_id: $("bb").value, status: $("bs").value });
+  } else if (id === "pharmacy.order_draft") {
+    f.innerHTML = `<p class="muted" style="margin:0 0 6px">Kam stock wali saari dawa ki list banegi (kitna mangwana hai, last supplier). Doctor / Admin approve karenge, phir Pharmacy → 📦 Order mein dikhegi.</p>
+      <button class="full" id="odgo">Approval ke liye bhejo</button>`;
+    $("odgo").onclick = () => submit(x, {});
   } else if (id === "pharmacy.writeoff_expired") {
     const { data } = await C.sb.from("medicine_batches").select("id, batch_no, expiry_date, quantity, medicines(name)")
       .lt("expiry_date", new Date().toISOString().slice(0, 10)).gt("quantity", 0).order("expiry_date");
@@ -246,6 +257,8 @@ async function describeInputs(tasks) {
     } else if (t.action === "operations.bed_status") {
       const x = b.data?.find(z => z.id === i.bed_id);
       out[t.id] = `🛏️ Bed <b>${C.esc(x?.label || "?")}</b>: ${C.esc(KEYS[x?.status] || x?.status || "?")} → <b>${C.esc(KEYS[i.status] || i.status)}</b>`;
+    } else if (t.action === "pharmacy.order_draft") {
+      out[t.id] = `📦 Kam stock wali dawa ki <b>purchase order list</b> banegi`;
     } else if (t.action === "pharmacy.writeoff_expired") {
       const x = m.data?.find(z => z.id === i.batch_id);
       out[t.id] = `💊 <b>${C.esc(x?.medicines?.name || "?")}</b> batch ${C.esc(x?.batch_no || "?")} (exp ${C.esc(x?.expiry_date || "?")}) · ${x?.quantity ?? "?"} pcs → <b>0</b>`;

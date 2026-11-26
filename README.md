@@ -18,7 +18,7 @@ AI-powered hospital management app, with a team of AI agents (Sister, Reception,
 8. ✅ AI chat: Sister AI + Reception AI (Gemini free tier via `agent-chat` edge function; tools use the user's own login; patient names masked as codes before reaching the AI)
 9. ✅ Appointment AI + OPD token line (free slots, safe booking / reschedule / cancel, auto tokens with emergency & 65+ priority, TV token screen, night job, AI chat booking)
 10. ✅ Accounts: rate list, server-calculated bills, payments / refunds / expenses as append-only ledger, discount rules, day book, cash close, receipts; Accountant AI (read-only)
-11. Pharmacy AI
+11. ✅ Pharmacy AI: medicine list (OTC / H / H1 / X), stock in with batch + expiry + MRP checks, sale with earliest-expiry-first batch and server price, H1 register, append-only stock ledger, sale cancel, damage correction, expiry / low-stock alerts, reorder list, AI order list (with approval), pharmacist takes payment for pharmacy bills
 12. Lab AI
 13. HR + Operations + Procurement AI
 14. Medical Records + Follow-up + Quality AI

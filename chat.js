@@ -7,14 +7,15 @@ const TOOL = { find_patient: "🔎 patient dhoonda", latest_vitals: "🩺 vitals
   "nurse__overdue_vitals": "⏰ baaki vitals", "operations__beds": "🛏️ bed sthiti", "followup__due": "📞 follow-up list",
   "followup__schedule": "✋ follow-up approval ko bheja", "operations__bed_status": "✋ bed badlav approval ko bheja",
   "reception__today": "🧾 aaj ka hisaab", "appointment__today": "📅 appointments", "lab__pending": "🧪 lab baaki",
-  "pharmacy__stock": "💊 stock / expiry", "accountant__dues": "💰 baaki bill", "boss__daily_report": "🤖 poori report" };
+  "pharmacy__stock": "💊 stock / expiry", "pharmacy__find_medicine": "💊 dawa dhoondi", "pharmacy__sales_today": "💊 aaj ki bikri",
+  "pharmacy__reorder": "📦 kya mangwana hai", "pharmacy__order_draft": "✋ order list approval ko bheji", "accountant__dues": "💰 baaki bill", "boss__daily_report": "🤖 poori report" };
 const HINTS = {
   nurse: ["Kis patient ke vitals baaki hain?", "Kitne bed khali hain?", "Aaj ke follow-up batao", "Dummy Ramesh ke aakhri vitals"],
   reception: ["Aaj ka hisaab batao", "Kitne bed khali hain?", "Aaj ki appointments", "Aaj ke follow-up kaun se hain?"],
   boss: ["Aaj hospital ka haal batao", "Kahan dhyan dena hai?", "Kitne bed khali hain?", "Baaki bill kitne hain?"],
   appointment: ["Aaj ki appointments batao"],
   lab: ["Kaun se test baaki hain?", "Koi critical report hai?"],
-  pharmacy: ["Kaunsi dawa expire hone wali hai?", "Kis dawa ka stock kam hai?"],
+  pharmacy: ["Paracetamol kitni bachi hai?", "Kaunsi dawa expire hone wali hai?", "Kya mangwana hai?", "Aaj kitni bikri hui?"],
   accountant: ["Kitne bill baaki hain?"],
   followup: ["Aaj ke follow-up batao", "Kaun se follow-up late hain?"],
   operations: ["Kitne bed khali hain?", "Kaun se bed safai mein hain?"]
