@@ -138,8 +138,16 @@ Deno.serve(async (req) => {
 
     const { data: ctx, error: e1 } = await sb.rpc("ai_chat_begin", { p_agent: agent });
     if (e1) return json({ error: e1.message }, 403);
-    const key = Deno.env.get("GEMINI_API_KEY");
-    if (!key) return json({ error: "AI key abhi nahi lagi. Doctor: Supabase → Edge Functions → Secrets mein GEMINI_API_KEY daalein.", setup: true }, 503);
+    // accept small naming slips (spaces / lowercase) in the secret name; never return the value
+    const envAll = Deno.env.toObject();
+    const kName = Object.keys(envAll).find((k) => k.trim().toUpperCase() === "GEMINI_API_KEY")
+               ?? Object.keys(envAll).find((k) => /GEMINI|GOOGLE_AI|API_KEY/i.test(k) && !/SUPABASE/i.test(k));
+    const key = kName ? envAll[kName].trim() : "";
+    if (!key) {
+      const seen = Object.keys(envAll).filter((k) => !/^(SUPABASE_|DENO_|PATH|HOME|HOSTNAME|SB_|LANG|TZ|PWD|SHLVL|_)/.test(k)).slice(0, 10);
+      return json({ error: "AI key abhi nahi lagi. Doctor: Supabase → Edge Functions → Secrets mein GEMINI_API_KEY daalein." +
+        (seen.length ? " (Secrets mein ye naam mile: " + seen.join(", ") + ")" : " (Koi secret nahi mila)"), setup: true }, 503);
+    }
 
     const mask = new Mask();
     const tools = toolDefs(ctx);
