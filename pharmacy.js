@@ -55,7 +55,7 @@ function sell() {
       || "<small class='muted'>Koi nahi mila — pehle Reception mein register karein</small>";
     $("pres").querySelectorAll("[data-p]").forEach(b => b.onclick = () => {
       PAT = JSON.parse(b.dataset.p); $("pres").innerHTML = ""; $("pq").value = PAT.full_name;
-      $("pchip").innerHTML = `✅ <b>${C.esc(PAT.full_name)}</b> · ${C.esc(PAT.uhid)}`; drawCart();
+      $("pchip").innerHTML = `✅ <b>${C.esc(PAT.full_name)}</b> · ${C.esc(PAT.uhid)}`; drawCart(); showRx(PAT.id);
     });
   }, 300); };
   $("mq").oninput = () => { clearTimeout(t2); t2 = setTimeout(async () => {
@@ -76,6 +76,32 @@ function sell() {
     });
   }, 300); };
   drawCart();
+}
+
+// latest doctor prescription (3 days) → one tap adds its medicines with quantity = doses per day × days
+async function showRx(pid) {
+  const { data } = await C.sb.from("prescriptions").select("items, created_at").eq("patient_id", pid)
+    .gte("created_at", new Date(Date.now() - 3 * 864e5).toISOString()).order("created_at", { ascending: false }).limit(1);
+  const rx = data?.[0];
+  if (!rx || !$("pchip")) return;
+  const perDay = f => { const m = String(f || "").match(/^\d(-\d){1,3}$/); return m ? f.split("-").reduce((s, x) => s + Number(x), 0) : 1; };
+  $("pchip").insertAdjacentHTML("beforeend", `<div class="card" style="margin-top:8px;background:#f0fdfa">📝 <b>Doctor ki parchi</b> <small class="muted">${dt(rx.created_at)}</small><br>
+    <small>${rx.items.map(i => `${C.esc(i.medicine)} · ${C.esc(i.frequency || "")}${i.days ? " × " + i.days + " din" : ""}`).join("<br>")}</small><br>
+    <button class="small" id="rxadd" style="margin-top:6px">＋ Parchi ki dawa bill mein jodo</button><p class="msg" id="rxm"></p></div>`);
+  $("rxadd").onclick = async () => {
+    const stock = await loadMeds().catch(() => []);
+    const miss = [];
+    for (const i of rx.items) {
+      const m = stock.find(x => x.medicine_id === i.medicine_id) || stock.find(x => `${x.name} ${x.strength || ""}`.trim().toLowerCase() === String(i.medicine).trim().toLowerCase());
+      if (!m || !m.active || !m.stock) { miss.push(i.medicine); continue; }
+      const want = Math.min(m.stock, Math.max(1, perDay(i.frequency) * (i.days || 1)));
+      if (!CART.some(x => x.medicine_id === m.medicine_id))
+        CART.push({ medicine_id: m.medicine_id, name: `${m.name} ${m.strength || ""}`.trim(), schedule: m.schedule, stock: m.stock,
+                    rate: Number(m.batches?.[0]?.mrp || m.mrp || 0), quantity: want });
+    }
+    drawCart();
+    if (miss.length) { $("rxm").className = "msg err"; $("rxm").textContent = "Stock mein nahi / list mein nahi: " + miss.join(", "); }
+  };
 }
 
 function drawCart(msg = "") {

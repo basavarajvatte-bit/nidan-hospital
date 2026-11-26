@@ -41,11 +41,13 @@ async function load() {
     q("invoices", "invoice_no, category, total, discount, status, created_at", "created_at"),
     q("medical_documents", "title, kind, created_at", "created_at"),
     q("appointments", "starts_at, status, reason", "starts_at"),
+    q("clinical_notes", "complaints, examination, provisional_dx, final_dx, advice, amend_reason, written_by, created_at", "created_at"),
+    q("discharge_summaries", "diagnosis, condition_at_discharge, amend_reason, written_by, created_at", "created_at"),
     C.sb.from("profiles").select("id, full_name"),
     C.sb.from("hx_complaints").select("id, name_en")
   ]);
-  const [enc, adm, vit, ord, rx, med, notes, lab, hx, fu, inv, docs, appt, staff, hxc] = res.map(r => r.data || []);
-  const hidden = ["encounters", "admissions", "vitals", "orders", "prescriptions", "dawa", "notes", "lab", "history", "follow-up", "bills", "documents", "appointments"]
+  const [enc, adm, vit, ord, rx, med, notes, lab, hx, fu, inv, docs, appt, cn, ds, staff, hxc] = res.map(r => r.data || []);
+  const hidden = ["encounters", "admissions", "vitals", "orders", "prescriptions", "dawa", "notes", "lab", "history", "follow-up", "bills", "documents", "appointments", "doctor notes", "discharge summary"]
     .filter((_, i) => res[i].error);
   const who = uid => uid ? (staff.find(s => s.id === uid)?.full_name || "staff") : "";
   const cname = cid => hxc.find(c => c.id === cid)?.name_en || cid;
@@ -83,6 +85,9 @@ async function load() {
   inv.forEach(i => add("bill", i.created_at, `Bill ${i.invoice_no || ""} — ${i.category}`, `₹${Number(i.total - (i.discount || 0)).toLocaleString("en-IN")} · ${i.status}`));
   docs.forEach(d => add("doc", d.created_at, `Document: ${d.title}`, d.kind || ""));
   appt.forEach(a => add("appt", a.starts_at, `Appointment (${a.status})`, a.reason || ""));
+  cn.forEach(n => add("note", n.created_at, n.amend_reason ? "🩺 Doctor note (badla)" : "🩺 Doctor note",
+    [n.complaints && "C/O: " + n.complaints, n.examination && "O/E: " + n.examination, (n.final_dx || n.provisional_dx) && "Dx: " + (n.final_dx || n.provisional_dx), n.advice && "Salah: " + n.advice, n.amend_reason && "Kaaran: " + n.amend_reason].filter(Boolean).join("\n"), who(n.written_by)));
+  ds.forEach(d => add("admit", d.created_at, d.amend_reason ? "🛏️ Discharge summary (badli)" : "🛏️ Discharge summary", [d.diagnosis, d.condition_at_discharge].filter(Boolean).join(" · "), who(d.written_by)));
   ITEMS.sort((a, b) => new Date(a.at) - new Date(b.at));
 
   const now = adm.find(a => a.status === "admitted");
