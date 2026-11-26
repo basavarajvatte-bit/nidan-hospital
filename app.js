@@ -1,7 +1,7 @@
 // Vatte Hospital OS — Phase 1: login, roles, role-based home screen, staff management.
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION = "16"; window.APP_VERSION = APP_VERSION; // bump on every release so phones get the new code
+const APP_VERSION = "17"; window.APP_VERSION = APP_VERSION; // bump on every release so phones get the new code
 const app = document.getElementById("app");
 const who = document.getElementById("who");
 const cfg = window.NIDAN_CONFIG || {};
@@ -18,12 +18,13 @@ const MODULES = [
   { id: "reception",  ico: "🧾", name: "Reception",        roles: ["doctor", "admin", "receptionist"], ready: true, file: "./reception.js" },
   { id: "nursing",    ico: "🩺", name: "Nursing Sister",   roles: ["doctor", "admin", "nurse"], ready: true, file: "./nursing.js" },
   { id: "nidan",      ico: "❓", name: "Nidan History",    roles: ["doctor", "nurse"], ready: true, file: "./nidan.js" },
+  { id: "agents",     ico: "🤖", name: "AI Agents",        roles: ["doctor", "admin", "receptionist", "nurse", "accountant", "pharmacist", "lab"], ready: true, file: "./agents.js" },
   { id: "appointments", ico: "📅", name: "Appointments",   roles: ["doctor", "admin", "receptionist"], phase: 9 },
   { id: "accounts",   ico: "💰", name: "Accounts",         roles: ["doctor", "admin", "accountant"], phase: 10 },
   { id: "pharmacy",   ico: "💊", name: "Pharmacy",         roles: ["doctor", "admin", "pharmacist"], phase: 11 },
   { id: "lab",        ico: "🧪", name: "Laboratory",       roles: ["doctor", "admin", "lab"], phase: 12 },
   { id: "hr",         ico: "👥", name: "HR",               roles: ["doctor", "admin", "hr"], phase: 13 },
-  { id: "boss",       ico: "🤖", name: "Boss AI",          roles: ["doctor", "admin"], phase: 15 },
+  { id: "boss",       ico: "🤖", name: "Boss AI chat",     roles: ["doctor", "admin"], phase: 15 },
   { id: "staff",      ico: "🔐", name: "Staff & Roles",    roles: ["doctor", "admin"], ready: true },
   { id: "audit",      ico: "📜", name: "Audit Log",        roles: ["doctor", "admin"], ready: true }
 ];
