@@ -111,6 +111,19 @@ async function startAction(id) {
     $("fmgo").onclick = () => submit(x, { query: $("fmq").value.trim() });
     return;
   }
+  if (x.kind === "check" && x.params?.required?.includes("patient_id")) {
+    const o1 = $("out_" + x.agent_id);
+    o1.innerHTML = `<div class="card" style="margin-top:8px"><label>Patient (naam / UHID / phone)</label><input id="ppq" placeholder="Kam se kam 2 akshar"><div id="ppr"></div></div>`;
+    let tm;
+    $("ppq").oninput = () => { clearTimeout(tm); tm = setTimeout(async () => {
+      const q = $("ppq").value.replace(/[%,()"\\*]/g, "").trim();
+      if (q.length < 2) { $("ppr").innerHTML = ""; return; }
+      const { data } = await C.sb.rpc("search_patients", { q });
+      $("ppr").innerHTML = (data || []).slice(0, 6).map(p => `<button class="small ghost" style="margin:3px" data-pp="${p.id}">${C.esc(p.full_name)} · ${C.esc(p.uhid)}</button>`).join("") || "<small class='muted'>Koi nahi mila</small>";
+      $("ppr").querySelectorAll("[data-pp]").forEach(b => b.onclick = () => submit(x, { patient_id: b.dataset.pp }));
+    }, 300); };
+    return;
+  }
   if (x.kind === "check") return submit(x, {});
   const o = $("out_" + x.agent_id);
   o.innerHTML = `<div class="card" style="background:#fffbeb;border-color:#fde68a;margin-top:8px">

@@ -19,7 +19,7 @@ AI-powered hospital management app, with a team of AI agents (Sister, Reception,
 9. ✅ Appointment AI + OPD token line (free slots, safe booking / reschedule / cancel, auto tokens with emergency & 65+ priority, TV token screen, night job, AI chat booking)
 10. ✅ Accounts: rate list, server-calculated bills, payments / refunds / expenses as append-only ledger, discount rules, day book, cash close, receipts; Accountant AI (read-only)
 11. ✅ Pharmacy AI: medicine list (OTC / H / H1 / X), stock in with batch + expiry + MRP checks, sale with earliest-expiry-first batch and server price, H1 register, append-only stock ledger, sale cancel, damage correction, expiry / low-stock alerts, reorder list, AI order list (with approval), pharmacist takes payment for pharmacy bills
-12. Lab AI
+12. ✅ Lab AI: test list with parameters, units, male / female normal ranges and critical limits (20 starter tests), write tests (urgent alert), sample no., result entry with server-side High / Low / CRITICAL flags, append-only results with amended reports, printable report, critical alert to Doctor + Sister repeated every 30 min until acknowledged, lab tests auto-added to bills; Lab AI (pending / late tests, today, patient reports)
 13. HR + Operations + Procurement AI
 14. Medical Records + Follow-up + Quality AI
 15. Boss AI

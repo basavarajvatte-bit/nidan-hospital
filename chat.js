@@ -6,7 +6,7 @@ const $ = id => document.getElementById(id);
 const TOOL = { find_patient: "🔎 patient dhoonda", latest_vitals: "🩺 vitals dekhe", list_beds: "🛏️ bed list",
   "nurse__overdue_vitals": "⏰ baaki vitals", "operations__beds": "🛏️ bed sthiti", "followup__due": "📞 follow-up list",
   "followup__schedule": "✋ follow-up approval ko bheja", "operations__bed_status": "✋ bed badlav approval ko bheja",
-  "reception__today": "🧾 aaj ka hisaab", "appointment__today": "📅 appointments", "lab__pending": "🧪 lab baaki",
+  "reception__today": "🧾 aaj ka hisaab", "appointment__today": "📅 appointments", "lab__pending": "🧪 lab baaki", "lab__today": "🧪 aaj ka lab", "lab__patient_reports": "🧪 patient ki reports",
   "pharmacy__stock": "💊 stock / expiry", "pharmacy__find_medicine": "💊 dawa dhoondi", "pharmacy__sales_today": "💊 aaj ki bikri",
   "pharmacy__reorder": "📦 kya mangwana hai", "pharmacy__order_draft": "✋ order list approval ko bheji", "accountant__dues": "💰 baaki bill", "boss__daily_report": "🤖 poori report" };
 const HINTS = {
@@ -14,7 +14,7 @@ const HINTS = {
   reception: ["Aaj ka hisaab batao", "Kitne bed khali hain?", "Aaj ki appointments", "Aaj ke follow-up kaun se hain?"],
   boss: ["Aaj hospital ka haal batao", "Kahan dhyan dena hai?", "Kitne bed khali hain?", "Baaki bill kitne hain?"],
   appointment: ["Aaj ki appointments batao"],
-  lab: ["Kaun se test baaki hain?", "Koi critical report hai?"],
+  lab: ["Kaun se test baaki hain?", "Aaj lab mein kitna kaam hua?", "Koi critical report hai?"],
   pharmacy: ["Paracetamol kitni bachi hai?", "Kaunsi dawa expire hone wali hai?", "Kya mangwana hai?", "Aaj kitni bikri hui?"],
   accountant: ["Kitne bill baaki hain?"],
   followup: ["Aaj ke follow-up batao", "Kaun se follow-up late hain?"],
