@@ -15,7 +15,7 @@ AI-powered hospital management app, with a team of AI agents (Sister, Reception,
 5. ✅ Nursing Sister: vitals, abnormal alerts to doctor, orders, medication records, notes, handover
 6. ✅ Nidan history engine — 15 systems, 97 complaints, 716 questions (Hutchison 24e), red-flag alerts, doctor report
 7. ✅ Agent engine: 13 agents registry, 12 actions (low / controlled / high risk), approvals, tamper-proof logs, Boss AI report, schedules (pg_cron)
-8. AI chat: Sister AI + Reception AI
+8. ✅ AI chat: Sister AI + Reception AI (Gemini free tier via `agent-chat` edge function; tools use the user's own login; patient names masked as codes before reaching the AI)
 9. Appointment AI + OPD queue
 10. Accountant AI: billing, payments, immutable ledger
 11. Pharmacy AI

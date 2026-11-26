@@ -1,0 +1,6 @@
+-- =========================================================
+-- VATTE HOSPITAL OS — PHASE 8 (AI Chat: Sister AI + Reception AI)
+-- Server function: supabase/functions/agent-chat (Gemini). Secret needed: GEMINI_API_KEY (optional GEMINI_MODEL).
+-- Limits: 40 questions / user / hour, 400 / hospital / day. Chat text is not stored; only usage counts + tool names.
+-- (Applied as migration "phase8_ai_chat" — same SQL as below.)
+-- =========================================================
