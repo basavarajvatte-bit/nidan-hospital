@@ -29,6 +29,7 @@ const newId = () => Array.from(crypto.getRandomValues(new Uint8Array(9)), (b) =>
 // ---------- pseudonymisation ----------
 class Mask {
   map = new Map<string, string>(); back = new Map<string, string>(); n = 0;
+  people = new Map<string, string>(); // uhid -> real name (for clickable links in the app)
   code(v: string, kind: string) {
     if (!v) return v;
     if (!this.map.has(v)) { const c = `${kind}${++this.n}`; this.map.set(v, c); this.back.set(c, v); }
@@ -37,6 +38,7 @@ class Mask {
   deep(x: any): any {
     if (Array.isArray(x)) return x.map((y) => this.deep(y));
     if (x && typeof x === "object") {
+      if (typeof x.uhid === "string") this.people.set(x.uhid, typeof x.patient === "string" ? x.patient : (x.full_name || ""));
       const o: any = {};
       for (const [k, v] of Object.entries(x)) {
         if (typeof v === "string" && ["patient", "full_name"].includes(k)) o[k] = this.code(v, "P");
@@ -118,6 +120,7 @@ NIYAM:
 - Khatarnaak vitals (BP 180+ ya 90 se kam, SpO2 92 se kam, pulse 130+ ya 50 se kam, temp 103F+) dikhe to turant doctor ko batane ko kaho.
 - Record badalne wale kaam sirf approval queue mein jaate hain — aap approve nahi karte; "ho gaya" tabhi bolo jab tool status "done" ho.
 - Patient ka naam / phone / UHID codes (P1, PH1, U1) mein dikhega — jawab mein wahi code likho, app asli naam dikha dega.
+- Jab bhi kisi patient ka zikr karo, naam ke saath uska UHID code (jaise U1) bhi zaroor likho, taaki staff us par click karke poori file dekh sake.
 - patient_id ya bed_id chahiye to pehle find_patient / list_beds chalao; ek se zyada patient mile to staff se poochho kaun sa.
 - Aap AI ho, galti ho sakti hai; zaroori baat doctor se confirm karwayein.${extra}`;
 }
@@ -302,7 +305,8 @@ Deno.serve(async (req) => {
     if (em) throw new Error("Chat save nahi hui: " + em.message);
 
     await sb.rpc("ai_chat_end", { p_agent: agent, p_tools: used, p_ok: true });
-    return json({ reply, tools: [...new Set(used)], provider, ms: totalMs, conversation_id: convId });
+    const patients = [...mask.people.entries()].filter(([u, n]) => reply.includes(u) || (n && reply.includes(n))).map(([uhid, name]) => ({ uhid, name }));
+    return json({ reply, tools: [...new Set(used)], provider, ms: totalMs, conversation_id: convId, patients });
   } catch (e) {
     if (agent) await sb.rpc("ai_chat_end", { p_agent: agent, p_tools: used, p_ok: false });
     return json({ error: String((e as Error).message || e) }, 500);

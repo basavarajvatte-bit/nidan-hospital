@@ -70,6 +70,17 @@ function open(a, conv = null) {
   $("old").onclick = showOld;
   $("hints").querySelectorAll("[data-h]").forEach(b => b.onclick = () => { $("q").value = b.dataset.h; send(); });
   $("f").onsubmit = e => { e.preventDefault(); send(); };
+  $("chat").addEventListener("click", e => {
+    const l = e.target.closest("[data-uhid]");
+    if (!l) return;
+    e.preventDefault();
+    const agentNow = AG, convNow = CONV;
+    import("./timeline.js?v=" + (window.APP_VERSION || "")).then(m => m.render(C, l.dataset.uhid, () => {
+      C.app.innerHTML = `<button class="ghost small back" id="bk">← Wapas</button><h2 style="margin:0 0 4px">💬 AI se baat</h2><div id="body"></div>`;
+      $("bk").onclick = () => render(C);
+      open(agentNow, convNow);
+    }));
+  });
   if (conv) loadConv(conv); else
     bubble("model", `Namaste${C.me.full_name ? " " + C.me.full_name : ""} 🙏 Main ${a.title} hoon. Aap mujhse hospital ke kaam ke baare mein pooch sakte hain.`);
 }
@@ -102,12 +113,22 @@ const meta = (tools, provider, ms) => {
   return chips || who ? `<div style="margin-top:6px">${chips}${who}</div>` : "";
 };
 
-function bubble(role, text, extra = "") {
+// patient names / UHIDs in AI answers become links that open the full patient timeline
+function linkify(html, people = []) {
+  const map = new Map();
+  for (const p of people) { if (p.name) map.set(C.esc(p.name), p.uhid); if (p.uhid) map.set(C.esc(p.uhid), p.uhid); }
+  const names = [...map.keys()].sort((x, y) => y.length - x.length).map(s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const re = new RegExp([...names, "\\b[A-Z]{2}\\d{8}\\b"].join("|"), "g");
+  return html.replace(re, m => `<a href="#" data-uhid="${map.get(m) || m}" style="color:#0f766e;font-weight:600;text-decoration:underline">${m}</a>`);
+}
+
+function bubble(role, text, extra = "", people = []) {
   const me = role === "user";
   const d = document.createElement("div");
   d.style.cssText = `align-self:${me ? "flex-end" : "flex-start"};max-width:88%;padding:8px 12px;border-radius:14px;white-space:pre-wrap;line-height:1.4;` +
     (me ? "background:#0f766e;color:#fff;border-bottom-right-radius:4px" : "background:#fff;border:1px solid #e2e8f0;border-bottom-left-radius:4px");
-  d.innerHTML = C.esc(text).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>") + extra;
+  const body = C.esc(text).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  d.innerHTML = (me ? body : linkify(body, people)) + extra;
   $("chat").appendChild(d);
   d.scrollIntoView({ behavior: "smooth", block: "end" });
   return d;
@@ -134,7 +155,7 @@ async function send() {
       if (msg?.setup) bubble("model", "Doctor sahab: AI chalu karne ke liye Supabase mein AI key lagani hai.");
     } else {
       CONV = msg.conversation_id || CONV;
-      bubble("model", msg.reply, meta(msg.tools, msg.provider, msg.ms));
+      bubble("model", msg.reply, meta(msg.tools, msg.provider, msg.ms), msg.patients || []);
     }
   } catch (e) {
     clearInterval(tick); wait.remove();
