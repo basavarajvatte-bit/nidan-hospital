@@ -185,7 +185,10 @@ function complaintScreen() {
   const chosen = new Map((S.session.complaints || []).map(c => [c.id, c]));
   // hide complaints that cannot apply to this patient's sex
   const sex = S.patient.gender;
-  const SHOWN = BANK.complaints.filter(c => !((sex === "male" && c.system === "Women") || (sex === "female" && c.id === "scrotal")));
+  const age = S.age;
+  const SHOWN = BANK.complaints.filter(c => !((sex === "male" && c.system === "Women") || (sex === "female" && c.id === "scrotal")
+    || (c.system === "Child" && age != null && age > 14) || (c.id === "newborn" && age != null && age > 0)
+    || (c.system === "Women" && age != null && age < 10)));
   $("pane").innerHTML = `${header("Mukhya takleef (chief complaints)", 1)}
     <div class="card"><p>Patient se poochho: <b>${S.lang === "mr" ? "आज कोणत्या त्रासामुळे दवाखान्यात आलात?" : S.lang === "en" ? "What problem has brought you here today?" : "आज किस तकलीफ़ की वजह से अस्पताल आए हैं?"}</b></p>
     <label>Patient ke apne shabdon mein</label><textarea id="own" rows="2">${C.esc(S.session.complaints?.[0]?.own_words || "")}</textarea>
