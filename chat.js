@@ -6,25 +6,41 @@ const $ = id => document.getElementById(id);
 const TOOL = { find_patient: "🔎 patient dhoonda", latest_vitals: "🩺 vitals dekhe", list_beds: "🛏️ bed list",
   "nurse__overdue_vitals": "⏰ baaki vitals", "operations__beds": "🛏️ bed sthiti", "followup__due": "📞 follow-up list",
   "followup__schedule": "✋ follow-up approval ko bheja", "operations__bed_status": "✋ bed badlav approval ko bheja",
-  "reception__today": "🧾 aaj ka hisaab", "appointment__today": "📅 appointments" };
+  "reception__today": "🧾 aaj ka hisaab", "appointment__today": "📅 appointments", "lab__pending": "🧪 lab baaki",
+  "pharmacy__stock": "💊 stock / expiry", "accountant__dues": "💰 baaki bill", "boss__daily_report": "🤖 poori report" };
 const HINTS = {
   nurse: ["Kis patient ke vitals baaki hain?", "Kitne bed khali hain?", "Aaj ke follow-up batao", "Dummy Ramesh ke aakhri vitals"],
-  reception: ["Aaj ka hisaab batao", "Kitne bed khali hain?", "Aaj ki appointments", "Aaj ke follow-up kaun se hain?"]
+  reception: ["Aaj ka hisaab batao", "Kitne bed khali hain?", "Aaj ki appointments", "Aaj ke follow-up kaun se hain?"],
+  boss: ["Aaj hospital ka haal batao", "Kahan dhyan dena hai?", "Kitne bed khali hain?", "Baaki bill kitne hain?"],
+  appointment: ["Aaj ki appointments batao"],
+  lab: ["Kaun se test baaki hain?", "Koi critical report hai?"],
+  pharmacy: ["Kaunsi dawa expire hone wali hai?", "Kis dawa ka stock kam hai?"],
+  accountant: ["Kitne bill baaki hain?"],
+  followup: ["Aaj ke follow-up batao", "Kaun se follow-up late hain?"],
+  operations: ["Kitne bed khali hain?", "Kaun se bed safai mein hain?"]
 };
+let ICON = {};
 
-export async function render(ctx) {
+export async function render(ctx, pick = null) {
   C = ctx; CONV = null; AG = null;
   C.app.innerHTML = `<button class="ghost small back" id="bk">← Wapas</button>
-    <h2 style="margin:0 0 4px">💬 AI Chat</h2><div id="body"><div class="card">Loading…</div></div>`;
+    <h2 style="margin:0 0 4px">💬 AI se baat</h2><div id="body"><div class="card">Loading…</div></div>`;
   $("bk").onclick = C.goHome;
-  const { data, error } = await C.sb.from("ai_chat_agents").select("*");
+  const [{ data, error }, { data: ag }] = await Promise.all([
+    C.sb.from("ai_chat_agents").select("*"),
+    C.sb.from("agents").select("id, icon, responsibilities, status")
+  ]);
   if (error) { $("body").innerHTML = `<div class="card msg err">${C.esc(error.message)}</div>`; return; }
-  LIST = (data || []).filter(a => a.roles.includes(C.me.role));
-  if (!LIST.length) { $("body").innerHTML = `<div class="card"><p class="muted">Aapke role ke liye abhi koi AI chat nahi hai. Agle phases mein aayegi.</p></div>`; return; }
+  ICON = Object.fromEntries((ag || []).map(x => [x.id, x]));
+  const order = ["boss", "nurse", "reception", "appointment", "lab", "pharmacy", "accountant", "followup", "operations"];
+  LIST = (data || []).filter(a => a.roles.includes(C.me.role)).sort((x, y) => order.indexOf(x.agent_id) - order.indexOf(y.agent_id));
+  if (!LIST.length) { $("body").innerHTML = `<div class="card"><p class="muted">Aapke role ke liye abhi koi AI chat nahi hai.</p></div>`; return; }
+  const chosen = pick && LIST.find(a => a.agent_id === pick);
+  if (chosen) return open(chosen);
   if (LIST.length === 1) return open(LIST[0]);
-  $("body").innerHTML = `<p class="muted">Kisse baat karni hai?</p><div class="grid">${LIST.map(a => `
-    <button class="tile" data-a="${a.agent_id}"><span class="ico">${a.agent_id === "nurse" ? "🩺" : "🧾"}</span>${C.esc(a.title)}
-    <small>${a.agent_id === "nurse" ? "Vitals, bed, follow-up" : "Aaj ka hisaab, appointments, follow-up"}</small></button>`).join("")}</div>`;
+  $("body").innerHTML = `<p class="muted">Kis AI se baat karni hai? Har baat-cheet hamesha save rehti hai.</p><div class="grid">${LIST.map(a => `
+    <button class="tile" data-a="${a.agent_id}"><span class="ico">${ICON[a.agent_id]?.icon || "🤖"}</span>${C.esc(a.title)}
+    <small>${C.esc((ICON[a.agent_id]?.responsibilities || "").split(",").slice(0, 3).join(","))}</small></button>`).join("")}</div>`;
   $("body").querySelectorAll("[data-a]").forEach(b => b.onclick = () => open(LIST.find(a => a.agent_id === b.dataset.a)));
 }
 
@@ -32,7 +48,7 @@ function open(a, conv = null) {
   AG = a; CONV = conv;
   $("body").innerHTML = `
     <div class="row" style="justify-content:space-between;margin-bottom:6px;gap:6px">
-      <b>${a.agent_id === "nurse" ? "🩺" : "🧾"} ${C.esc(a.title)}</b>
+      <b>${ICON[a.agent_id]?.icon || "🤖"} ${C.esc(a.title)}</b>
       <span class="row" style="gap:6px">
         <button class="small ghost" id="old">🕘 Purani baatein</button>
         <button class="small ghost" id="new">＋ Nayi</button>
@@ -41,7 +57,7 @@ function open(a, conv = null) {
     </div>
     <div id="oldlist"></div>
     <div class="card" style="background:#fffbeb;border-color:#fde68a;padding:8px 10px;font-size:13px">
-      ⚠️ Ye AI hai — galti ho sakti hai. Diagnosis / dawa nahi deta, kuch approve nahi karta. Abhi sirf <b>dummy (nakli) patient</b> ke saath use karein. Saari baat-cheet save hoti hai.</div>
+      ⚠️ Ye AI hai — galti ho sakti hai. Diagnosis / dawa nahi deta, kuch approve nahi karta. Abhi sirf <b>dummy (nakli) patient</b> ke saath use karein. Saari baat-cheet hamesha save rehti hai (koi delete nahi kar sakta).</div>
     <div id="chat" style="display:flex;flex-direction:column;gap:8px;margin:10px 0;min-height:200px"></div>
     <div class="row" id="hints" style="gap:6px;flex-wrap:wrap;margin-bottom:8px">${(HINTS[a.agent_id] || []).map(h =>
       `<button class="small ghost" data-h="${C.esc(h)}">${C.esc(h)}</button>`).join("")}</div>

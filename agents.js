@@ -1,6 +1,6 @@
 // Vatte Hospital OS — Phase 7: AI Agent Engine screen
 // Staff ask an agent to do a job. Checks run at once; jobs that change records wait for approval.
-let C, TAB = "agents", AGENTS = [], ACTIONS = [];
+let C, TAB = "agents", AGENTS = [], ACTIONS = [], CHAT = new Set();
 const $ = id => document.getElementById(id);
 const dt = t => t ? new Date(t).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
 const RISK = { low: ["🟢", "Turant chalta hai"], controlled: ["🟡", "Doctor / Admin ki approval"], high: ["🔴", "Sirf Doctor ki approval"] };
@@ -36,10 +36,12 @@ export function render(ctx) {
 }
 
 async function boot() {
-  const [{ data: a, error }, { data: ac }] = await Promise.all([
+  const [{ data: a, error }, { data: ac }, { data: ch }] = await Promise.all([
     C.sb.from("agents").select("*").order("id"),
-    C.sb.from("agent_actions").select("*").order("ord")
+    C.sb.from("agent_actions").select("*").order("ord"),
+    C.sb.from("ai_chat_agents").select("agent_id, roles")
   ]);
+  CHAT = new Set((ch || []).filter(x => x.roles.includes(C.me.role)).map(x => x.agent_id));
   if (error) { $("body").innerHTML = `<div class="card msg err">${C.esc(error.message)}</div>`; return; }
   AGENTS = a; ACTIONS = ac || [];
   show();
@@ -76,6 +78,7 @@ function showAgents() {
       <div class="row" style="gap:6px;flex-wrap:wrap">${mine.filter(x => x.agent_id === a.id).map(x => `
         <button class="small ${x.kind === "act" ? "ghost" : ""}" data-act="${x.id}" ${a.status === "paused" ? "disabled" : ""}
           title="${C.esc(x.description)}">${x.kind === "check" ? "▶" : RISK[x.risk][0]} ${C.esc(x.title)}</button>`).join("")}
+        ${CHAT.has(a.id) ? `<button class="small ghost" data-chat="${a.id}">💬 Baat karo</button>` : ""}
         ${C.me.role === "doctor" && a.id !== "boss" ? `<button class="small ghost" data-pause="${a.id}" data-to="${a.status === "paused" ? "active" : "paused"}">
           ${a.status === "paused" ? "▶ Chalu karo" : "⏸ Band karo"}</button>` : ""}
       </div>
@@ -84,6 +87,8 @@ function showAgents() {
     + `<div class="card"><small class="muted">⏰ Apne aap: Boss AI report roz subah 8:30 aur raat 8:00 baje · Sister agent har ghante vitals check karta hai.<br>
        🟢 turant · 🟡 Doctor/Admin approval · 🔴 sirf Doctor approval</small></div>`;
   $("body").querySelectorAll("[data-act]").forEach(b => b.onclick = () => startAction(b.dataset.act));
+  $("body").querySelectorAll("[data-chat]").forEach(b => b.onclick = () =>
+    import("./chat.js?v=" + (window.APP_VERSION || "")).then(m => m.render(C, b.dataset.chat)));
   $("body").querySelectorAll("[data-pause]").forEach(b => b.onclick = async () => {
     b.disabled = true;
     const { error } = await C.sb.rpc("agent_set_status", { p_agent: b.dataset.pause, p_status: b.dataset.to });
