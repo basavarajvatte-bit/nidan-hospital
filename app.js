@@ -1,7 +1,7 @@
 // Vatte Hospital OS — Phase 1: login, roles, role-based home screen, staff management.
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION = "25"; window.APP_VERSION = APP_VERSION; // bump on every release so phones get the new code
+const APP_VERSION = "26"; window.APP_VERSION = APP_VERSION; // bump on every release so phones get the new code
 const app = document.getElementById("app");
 const who = document.getElementById("who");
 const cfg = window.NIDAN_CONFIG || {};
@@ -21,7 +21,7 @@ const MODULES = [
   { id: "chat",       ico: "💬", name: "AI se baat",       roles: ["doctor", "admin", "receptionist", "nurse", "accountant", "pharmacist", "lab"], ready: true, file: "./chat.js" },
   { id: "agents",     ico: "🤖", name: "AI Agents",        roles: ["doctor", "admin", "receptionist", "nurse", "accountant", "pharmacist", "lab"], ready: true, file: "./agents.js" },
   { id: "appointments", ico: "📅", name: "Appointments & OPD line", roles: ["doctor", "admin", "receptionist", "nurse"], ready: true, file: "./appointments.js" },
-  { id: "accounts",   ico: "💰", name: "Accounts",         roles: ["doctor", "admin", "accountant"], phase: 10 },
+  { id: "accounts",   ico: "💰", name: "Accounts / Bill",  roles: ["doctor", "admin", "accountant", "receptionist"], ready: true, file: "./accounts.js" },
   { id: "pharmacy",   ico: "💊", name: "Pharmacy",         roles: ["doctor", "admin", "pharmacist"], phase: 11 },
   { id: "lab",        ico: "🧪", name: "Laboratory",       roles: ["doctor", "admin", "lab"], phase: 12 },
   { id: "hr",         ico: "👥", name: "HR",               roles: ["doctor", "admin", "hr"], phase: 13 },
