@@ -1,7 +1,7 @@
 // Vatte Hospital OS — Phase 8: AI Chat (Sister AI / Reception AI)
 // Talks to the 'agent-chat' server function. The AI only sees hospital data through tools that use
-// this user's own login; patient names are hidden from the AI as codes. Chat is not saved on the server.
-let C, AG = null, MSGS = [], BUSY = false, LIST = [];
+// this user's own login; patient names are hidden from the AI as codes. Every chat is saved (ai_conversations / ai_messages).
+let C, AG = null, CONV = null, BUSY = false, LIST = [];
 const $ = id => document.getElementById(id);
 const TOOL = { find_patient: "🔎 patient dhoonda", latest_vitals: "🩺 vitals dekhe", list_beds: "🛏️ bed list",
   "nurse__overdue_vitals": "⏰ baaki vitals", "operations__beds": "🛏️ bed sthiti", "followup__due": "📞 follow-up list",
@@ -13,7 +13,7 @@ const HINTS = {
 };
 
 export async function render(ctx) {
-  C = ctx; MSGS = []; AG = null;
+  C = ctx; CONV = null; AG = null;
   C.app.innerHTML = `<button class="ghost small back" id="bk">← Wapas</button>
     <h2 style="margin:0 0 4px">💬 AI Chat</h2><div id="body"><div class="card">Loading…</div></div>`;
   $("bk").onclick = C.goHome;
@@ -28,15 +28,20 @@ export async function render(ctx) {
   $("body").querySelectorAll("[data-a]").forEach(b => b.onclick = () => open(LIST.find(a => a.agent_id === b.dataset.a)));
 }
 
-function open(a) {
-  AG = a; MSGS = [];
+function open(a, conv = null) {
+  AG = a; CONV = conv;
   $("body").innerHTML = `
-    <div class="row" style="justify-content:space-between;margin-bottom:6px">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px;gap:6px">
       <b>${a.agent_id === "nurse" ? "🩺" : "🧾"} ${C.esc(a.title)}</b>
-      ${LIST.length > 1 ? `<button class="small ghost" id="sw">Badlo</button>` : ""}
+      <span class="row" style="gap:6px">
+        <button class="small ghost" id="old">🕘 Purani baatein</button>
+        <button class="small ghost" id="new">＋ Nayi</button>
+        ${LIST.length > 1 ? `<button class="small ghost" id="sw">Badlo</button>` : ""}
+      </span>
     </div>
+    <div id="oldlist"></div>
     <div class="card" style="background:#fffbeb;border-color:#fde68a;padding:8px 10px;font-size:13px">
-      ⚠️ Ye AI hai — galti ho sakti hai. Diagnosis / dawa nahi deta, kuch approve nahi karta. Abhi sirf <b>dummy (nakli) patient</b> ke saath use karein.</div>
+      ⚠️ Ye AI hai — galti ho sakti hai. Diagnosis / dawa nahi deta, kuch approve nahi karta. Abhi sirf <b>dummy (nakli) patient</b> ke saath use karein. Saari baat-cheet save hoti hai.</div>
     <div id="chat" style="display:flex;flex-direction:column;gap:8px;margin:10px 0;min-height:200px"></div>
     <div class="row" id="hints" style="gap:6px;flex-wrap:wrap;margin-bottom:8px">${(HINTS[a.agent_id] || []).map(h =>
       `<button class="small ghost" data-h="${C.esc(h)}">${C.esc(h)}</button>`).join("")}</div>
@@ -45,10 +50,41 @@ function open(a) {
       <button id="send">Bhejo</button>
     </form>`;
   if ($("sw")) $("sw").onclick = () => render(C);
+  $("new").onclick = () => open(a, null);
+  $("old").onclick = showOld;
   $("hints").querySelectorAll("[data-h]").forEach(b => b.onclick = () => { $("q").value = b.dataset.h; send(); });
   $("f").onsubmit = e => { e.preventDefault(); send(); };
-  bubble("model", `Namaste${C.me.full_name ? " " + C.me.full_name : ""} 🙏 Main ${a.title} hoon. Aap mujhse hospital ke kaam ke baare mein pooch sakte hain.`);
+  if (conv) loadConv(conv); else
+    bubble("model", `Namaste${C.me.full_name ? " " + C.me.full_name : ""} 🙏 Main ${a.title} hoon. Aap mujhse hospital ke kaam ke baare mein pooch sakte hain.`);
 }
+
+async function showOld() {
+  const box = $("oldlist");
+  if (box.innerHTML) { box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="card">Loading…</div>`;
+  const { data, error } = await C.sb.from("ai_conversations").select("id, title, updated_at, user_id")
+    .eq("agent_id", AG.agent_id).eq("user_id", C.me.id).order("updated_at", { ascending: false }).limit(30);
+  if (error) { box.innerHTML = `<div class="card msg err">${C.esc(error.message)}</div>`; return; }
+  box.innerHTML = `<div class="card" style="max-height:260px;overflow:auto">${data.length ? data.map(c => `
+    <button class="ghost full" style="text-align:left;margin:3px 0" data-c="${c.id}">💬 ${C.esc(c.title)}
+      <small class="muted"> · ${new Date(c.updated_at).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</small></button>`).join("")
+    : "<p class='muted' style='margin:0'>Abhi koi purani baat nahi.</p>"}</div>`;
+  box.querySelectorAll("[data-c]").forEach(b => b.onclick = () => open(AG, b.dataset.c));
+}
+
+async function loadConv(id) {
+  if ($("hints")) $("hints").style.display = "none";
+  const { data, error } = await C.sb.from("ai_messages").select("role, content, provider, ms, tools, created_at")
+    .eq("conversation_id", id).order("id");
+  if (error) { bubble("model", "❌ " + error.message); return; }
+  for (const m of data) bubble(m.role === "user" ? "user" : "model", m.content, m.role === "user" ? "" : meta(m.tools, m.provider, m.ms));
+}
+
+const meta = (tools, provider, ms) => {
+  const chips = (tools || []).map(t => `<span class="badge" style="font-size:11px;margin:2px">${C.esc(TOOL[t] || t)}</span>`).join("");
+  const who = provider ? `<span class="muted" style="font-size:11px;margin-left:4px">⚡ ${C.esc(provider)}${ms ? " · " + (ms / 1000).toFixed(1) + " sec" : ""}</span>` : "";
+  return chips || who ? `<div style="margin-top:6px">${chips}${who}</div>` : "";
+};
 
 function bubble(role, text, extra = "") {
   const me = role === "user";
@@ -66,28 +102,26 @@ async function send() {
   if (!q || BUSY) return;
   BUSY = true; $("send").disabled = true; $("q").value = "";
   if ($("hints")) $("hints").style.display = "none";
-  MSGS.push({ role: "user", text: q });
   bubble("user", q);
   const wait = bubble("model", "⏳ Soch raha hoon…");
+  const t0 = Date.now();
+  const tick = setInterval(() => { wait.textContent = "⏳ Soch raha hoon… " + Math.round((Date.now() - t0) / 1000) + " sec"; }, 1000);
   try {
-    const { data, error } = await C.sb.functions.invoke("agent-chat", { body: { agent: AG.agent_id, messages: MSGS.slice(-12) } });
+    const { data, error } = await C.sb.functions.invoke("agent-chat", { body: { agent: AG.agent_id, text: q, conversation_id: CONV } });
     let msg = error ? null : data;
     if (error) {
       try { msg = await error.context.json(); } catch { msg = { error: error.message }; }
     }
-    wait.remove();
+    clearInterval(tick); wait.remove();
     if (!msg || msg.error) {
-      MSGS.pop();
       bubble("model", "❌ " + (msg?.error || "Kuch gadbad hui"));
-      if (msg?.setup) bubble("model", "Doctor sahab: AI chalu karne ke liye ek baar Gemini key lagani hai (setup steps chat mein Claude ne diye hain).");
+      if (msg?.setup) bubble("model", "Doctor sahab: AI chalu karne ke liye Supabase mein AI key lagani hai.");
     } else {
-      MSGS.push({ role: "model", text: msg.reply });
-      const chips = (msg.tools || []).length ? `<div style="margin-top:6px">${msg.tools.map(t =>
-        `<span class="badge" style="font-size:11px;margin:2px">${C.esc(TOOL[t] || t)}</span>`).join("")}</div>` : "";
-      bubble("model", msg.reply, chips);
+      CONV = msg.conversation_id || CONV;
+      bubble("model", msg.reply, meta(msg.tools, msg.provider, msg.ms));
     }
   } catch (e) {
-    wait.remove(); MSGS.pop();
+    clearInterval(tick); wait.remove();
     bubble("model", "❌ Internet / server se baat nahi hui: " + e.message);
   }
   BUSY = false; $("send").disabled = false; $("q").focus();
