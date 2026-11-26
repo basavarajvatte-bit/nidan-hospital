@@ -7,7 +7,7 @@ const dt = t => new Date(t).toLocaleString("en-IN", { day: "2-digit", month: "sh
 const GEN_SECTIONS = ["past", "drug", "allergy", "family", "personal", "obstetric", "ice", "ros"];
 const SEC_NAME = { safety: "Emergency check", hopi: "Takleef ki detail", associated: "Saath ke lakshan", redflag: "⚠️ Khatre ke nishan",
   risk: "Risk factors", past: "Purani bimari", drug: "Dawaiyan", allergy: "Allergy", family: "Parivar", personal: "Aadatein",
-  obstetric: "Mahila", pediatric: "Bachche ka itihaas", ice: "Patient ki soch", ros: "Baaki sharir" };
+  obstetric: "Mahila", pediatric: "Bachche ka itihaas", geriatric: "Buzurg ki jaankari", ice: "Patient ki soch", ros: "Baaki sharir" };
 const SPECIAL = { yes: { hi: "हाँ", mr: "हो", en: "Yes" }, no: { hi: "नहीं", mr: "नाही", en: "No" },
   unknown: { hi: "पता नहीं", mr: "माहीत नाही", en: "Don't know" }, na: { hi: "लागू नहीं", mr: "लागू नाही", en: "Not applicable" },
   unable: { hi: "जवाब नहीं दे सकते", mr: "उत्तर देऊ शकत नाही", en: "Unable to answer" } };
@@ -188,7 +188,8 @@ function complaintScreen() {
   const age = S.age;
   const SHOWN = BANK.complaints.filter(c => !((sex === "male" && c.system === "Women") || (sex === "female" && c.id === "scrotal")
     || (c.system === "Child" && age != null && age > 14) || (c.id === "newborn" && age != null && age > 0)
-    || (c.system === "Women" && age != null && age < 10)));
+    || (c.system === "Women" && age != null && age < 10)
+    || (c.system === "Elderly" && c.id !== "ger_bedsore" && age != null && age < 60)));
   $("pane").innerHTML = `${header("Mukhya takleef (chief complaints)", 1)}
     <div class="card"><p>Patient se poochho: <b>${S.lang === "mr" ? "आज कोणत्या त्रासामुळे दवाखान्यात आलात?" : S.lang === "en" ? "What problem has brought you here today?" : "आज किस तकलीफ़ की वजह से अस्पताल आए हैं?"}</b></p>
     <label>Patient ke apne shabdon mein</label><textarea id="own" rows="2">${C.esc(S.session.complaints?.[0]?.own_words || "")}</textarea>
@@ -258,7 +259,7 @@ function visible(q) {
   if (c.in_any) return Array.isArray(v) && v.some(x => c.in_any.includes(x));
   return true;
 }
-const ORDER = ["hopi", "redflag", "associated", "risk", "pediatric", "family"];
+const ORDER = ["hopi", "redflag", "associated", "risk", "pediatric", "geriatric", "family"];
 function buildFlow() {
   const ids = [], keys = new Set();
   const add = q => {
