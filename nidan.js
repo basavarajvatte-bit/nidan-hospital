@@ -7,7 +7,7 @@ const dt = t => new Date(t).toLocaleString("en-IN", { day: "2-digit", month: "sh
 const GEN_SECTIONS = ["past", "drug", "allergy", "family", "personal", "obstetric", "ice", "ros"];
 const SEC_NAME = { safety: "Emergency check", hopi: "Takleef ki detail", associated: "Saath ke lakshan", redflag: "⚠️ Khatre ke nishan",
   risk: "Risk factors", past: "Purani bimari", drug: "Dawaiyan", allergy: "Allergy", family: "Parivar", personal: "Aadatein",
-  obstetric: "Mahila", ice: "Patient ki soch", ros: "Baaki sharir" };
+  obstetric: "Mahila", pediatric: "Bachche ka itihaas", ice: "Patient ki soch", ros: "Baaki sharir" };
 const SPECIAL = { yes: { hi: "हाँ", mr: "हो", en: "Yes" }, no: { hi: "नहीं", mr: "नाही", en: "No" },
   unknown: { hi: "पता नहीं", mr: "माहीत नाही", en: "Don't know" }, na: { hi: "लागू नहीं", mr: "लागू नाही", en: "Not applicable" },
   unable: { hi: "जवाब नहीं दे सकते", mr: "उत्तर देऊ शकत नाही", en: "Unable to answer" } };
@@ -258,7 +258,7 @@ function visible(q) {
   if (c.in_any) return Array.isArray(v) && v.some(x => c.in_any.includes(x));
   return true;
 }
-const ORDER = ["hopi", "redflag", "associated", "risk"];
+const ORDER = ["hopi", "redflag", "associated", "risk", "pediatric", "family"];
 function buildFlow() {
   const ids = [], keys = new Set();
   const add = q => {

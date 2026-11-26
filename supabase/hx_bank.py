@@ -605,6 +605,11 @@ import pathlib as _pl
 for _f in ["hx_cvs.py", "hx_resp.py", "hx_git.py", "hx_cns.py", "hx_uro.py", "hx_loco.py", "hx_endo.py", "hx_haem.py", "hx_skin.py", "hx_ent.py", "hx_eye.py", "hx_psych.py", "hx_gyn.py", "hx_child.py"]:
     exec((_pl.Path(__file__).parent / _f).read_text(encoding="utf-8"))
 
+# Adult-only personal history: not asked for young children (Paediatric phase)
+for _q in QUESTIONS:
+    if _q["id"] in ("ps_tobacco", "ps_alcohol", "ps_cage", "ps_occupation", "ps_alcohol_qty") and not _q["applies_to"]:
+        _q["applies_to"] = {"min_age": 12}
+
 # Questions replaced by better ones (never deleted, only switched off)
 RETIRED = {"cp_exertion": "replaced by cp_triggers + cp_relief (CVS phase)",
            "cp_meals": "replaced by cp_triggers + cp_relief (CVS phase)",
