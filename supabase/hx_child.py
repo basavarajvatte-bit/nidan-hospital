@@ -20,7 +20,7 @@ C("child_checkup", "Child", "Child check-up / vaccines / behaviour", "बच्�
 
 # ---------------------------------------------------------------- shared background (Box 6.1-6.2), asked once per session
 def child_background(p, comp, base):
-    Q(f"{p}_birth", comp, "pmh", base, "multi", "Birth history", "जन्म का इतिहास", "जन्माचा इतिहास", term="Perinatal history (Box 6.2)", key="child_birth", applies=KID, opts=[
+    Q(f"{p}_birth", comp, "pediatric", base, "multi", "Birth history", "जन्म का इतिहास", "जन्माचा इतिहास", term="Perinatal history (Box 6.2)", key="child_birth", applies=KID, opts=[
         O("term_normal", "Born on time, normal, cried at once", "समय पर, नॉर्मल, तुरंत रोया", "वेळेवर, नॉर्मल, लगेच रडले"),
         O("preterm_lbw", "Premature / low birth weight (<2.5 kg)", "समय से पहले / कम वज़न (<2.5 किलो)", "अकाली / कमी वजन (<2.5 किलो)", ["Prematurity / low birth weight"]),
         O("nicu", "Did not cry at birth / NICU / oxygen", "जन्म पर नहीं रोया / NICU / ऑक्सीजन", "जन्मतः रडले नाही / NICU / ऑक्सिजन", ["Birth asphyxia"]),
@@ -28,7 +28,7 @@ def child_background(p, comp, base):
         O("mother_illness", "Mother ill / on medicines / alcohol in pregnancy", "गर्भ में माँ बीमार / दवा / शराब", "गर्भात आई आजारी / औषध / दारू", ["Antenatal exposure"]),
         O("caesarean", "Caesarean / forceps / home delivery", "सिज़ेरियन / चिमटा / घर पर डिलीवरी", "सिझेरियन / चिमटा / घरी प्रसूती")],
       src=f"{CH}, p65 (Box 6.2)")
-    Q(f"{p}_vacc", comp, "pmh", base + 1, "choice", "Vaccines up to date for age (check MCP card)?", "उम्र के हिसाब से सारे टीके लगे हैं (MCP कार्ड देखें)?",
+    Q(f"{p}_vacc", comp, "pediatric", base + 1, "choice", "Vaccines up to date for age (check MCP card)?", "उम्र के हिसाब से सारे टीके लगे हैं (MCP कार्ड देखें)?",
       "वयानुसार सर्व लसी झाल्या आहेत का (MCP कार्ड पाहा)?", term="Immunisation status", key="child_vaccines", applies=KID, opts=[
           O("full", "Yes, all", "हाँ, सारे", "हो, सर्व"),
           O("partial", "Some missed", "कुछ छूटे", "काही राहिल्या", ["Incomplete immunisation"]),
