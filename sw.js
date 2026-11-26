@@ -1,5 +1,5 @@
 // Offline shell cache. Patient data is never cached here.
-const CACHE = "nidan-v22";
+const CACHE = "nidan-v23";
 const SHELL = ["./", "index.html", "style.css", "app.js", "config.js", "manifest.json", "icon.svg", "reception.js", "dashboard.js", "nursing.js", "nidan.js", "agents.js", "chat.js", "timeline.js", "search.js"];
 
 self.addEventListener("install", e => {

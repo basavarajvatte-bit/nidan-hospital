@@ -31,27 +31,23 @@ async function run() {
   const q = clean($("sq").value), kind = $("sk").value, box = $("sres");
   if (q.length < 2) { box.innerHTML = ""; return; }
   box.innerHTML = `<p class="muted" style="margin:6px 0">Dhoondh raha hoon…</p>`;
+  const tag = r => r.exact ? "" : ` <span class="badge" style="font-size:11px">≈ milta-julta ${Math.round((r.score || 0) * 100)}%</span>`;
+  const head = rows => rows.some(r => !r.exact)
+    ? `<p class="muted" style="margin:6px 0 0;font-size:12px">${rows.some(r => r.exact) ? "Mile hue naam, aur neeche milte-julte naam:" : `"${C.esc(q)}" bilkul is naam se koi nahi, lekin ye milte-julte naam hain:`}</p>` : "";
   if (kind === "patient") {
-    const { data, error } = await C.sb.from("patients").select("id, uhid, full_name, gender, age_years, phone")
-      .or(`full_name.ilike."%${q}%",uhid.ilike."%${q}%",phone.ilike."%${q}%"`).order("created_at", { ascending: false }).limit(10);
+    const { data, error } = await C.sb.rpc("search_patients", { q });
     if (error) { box.innerHTML = `<p class="msg err">${C.esc(error.message)}</p>`; return; }
-    box.innerHTML = data.length ? data.map(p => `<button class="ghost full" style="text-align:left;margin-top:6px" data-p="${p.id}">
-        🧑‍🦱 <b>${C.esc(p.full_name)}</b> <small class="muted">· ${C.esc(p.uhid)} · ${C.esc(p.gender || "")} ${p.age_years ?? ""} ${p.phone ? "· " + C.esc(p.phone) : ""}</small></button>`).join("")
-      : `<p class="muted" style="margin:6px 0">Is naam ka koi patient nahi mila.</p>`;
+    box.innerHTML = data.length ? head(data) + data.map(p => `<button class="ghost full" style="text-align:left;margin-top:6px" data-p="${p.id}">
+        🧑‍🦱 <b>${C.esc(p.full_name)}</b>${tag(p)} <small class="muted">· ${C.esc(p.uhid)} · ${C.esc(p.gender || "")} ${p.age ?? ""} ${p.phone ? "· " + C.esc(p.phone) : ""}</small></button>`).join("")
+      : `<p class="muted" style="margin:6px 0">"${C.esc(q)}" ya isse milta-julta koi patient hamare yahan nahi hai.</p>`;
     box.querySelectorAll("[data-p]").forEach(b => b.onclick = () =>
       import("./timeline.js?v=" + (window.APP_VERSION || "")).then(m => m.render(C, b.dataset.p, C.goHome)));
   } else {
-    const [{ data: prof }, { data: sm }] = await Promise.all([
-      C.sb.from("profiles").select("id, full_name, role, created_at").ilike("full_name", `%${q}%`).limit(10),
-      C.sb.from("staff_members").select("id, profile_id, full_name, designation, phone").or(`full_name.ilike."%${q}%",phone.ilike."%${q}%"`).limit(10)
-    ]);
-    const list = [];
-    (prof || []).forEach(p => list.push({ key: "p:" + p.id, name: p.full_name || "(naam nahi)", sub: ROLE[p.role] || p.role }));
-    (sm || []).filter(s => !s.profile_id || !(prof || []).some(p => p.id === s.profile_id))
-      .forEach(s => list.push({ key: "s:" + s.id, name: s.full_name, sub: s.designation || "Staff record" }));
-    box.innerHTML = list.length ? list.map(x => `<button class="ghost full" style="text-align:left;margin-top:6px" data-e="${x.key}">
-        👩‍⚕️ <b>${C.esc(x.name)}</b> <small class="muted">· ${C.esc(x.sub)}</small></button>`).join("")
-      : `<p class="muted" style="margin:6px 0">Is naam ka koi employee nahi mila.</p>`;
+    const { data, error } = await C.sb.rpc("search_staff", { q });
+    if (error) { box.innerHTML = `<p class="msg err">${C.esc(error.message)}</p>`; return; }
+    box.innerHTML = data.length ? head(data) + data.map(x => `<button class="ghost full" style="text-align:left;margin-top:6px" data-e="${x.profile_id ? "p:" + x.profile_id : "s:" + x.staff_id}">
+        👩‍⚕️ <b>${C.esc(x.full_name || "(naam nahi)")}</b>${tag(x)} <small class="muted">· ${C.esc(ROLE[x.role] || x.designation || "Staff")}</small></button>`).join("")
+      : `<p class="muted" style="margin:6px 0">"${C.esc(q)}" ya isse milta-julta koi employee nahi hai.</p>`;
     box.querySelectorAll("[data-e]").forEach(b => b.onclick = () => openEmployee(b.dataset.e));
   }
 }

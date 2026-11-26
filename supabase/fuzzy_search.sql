@@ -1,0 +1,2 @@
+-- Spelling-tolerant search (applied as migration "fuzzy_search"): search_patients(q), search_staff(q)
+-- exact / partial matches first, then names with trigram similarity >= 0.12 (e.g. "tump" -> "Trump"). security invoker (RLS applies).

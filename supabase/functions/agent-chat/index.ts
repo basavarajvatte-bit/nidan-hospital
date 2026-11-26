@@ -81,10 +81,12 @@ async function runTool(sb: any, ctx: any, name: string, args: any) {
   if (name === "find_patient") {
     const q = String(args.query || "").replace(/[%,()"\\*]/g, "").trim();
     if (q.length < 2) return { error: "Kam se kam 2 akshar do" };
-    const { data, error } = await sb.from("patients").select("id, uhid, full_name, gender, age_years, phone")
-      .or(`full_name.ilike."%${q}%",uhid.ilike."%${q}%",phone.ilike."%${q}%"`).limit(5);
+    // spelling-tolerant: exact matches first, then close spellings (e.g. "tump" → "Trump")
+    const { data, error } = await sb.rpc("search_patients", { q });
     if (error) return { error: error.message };
-    return { patients: (data || []).map((p: any) => ({ patient_id: p.id, patient: p.full_name, uhid: p.uhid, phone: p.phone, gender: p.gender, age: p.age_years })) };
+    const rows = (data || []).slice(0, 6);
+    return { note: rows.length && !rows.some((p: any) => p.exact) ? "Exact naam nahi mila; ye milte-julte naam hain — staff se confirm karo kaun sa." : undefined,
+             patients: rows.map((p: any) => ({ patient_id: p.id, patient: p.full_name, uhid: p.uhid, phone: p.phone, gender: p.gender, age: p.age, exact_match: p.exact })) };
   }
   if (name === "latest_vitals") {
     const { data, error } = await sb.from("vitals").select("bp_systolic, bp_diastolic, pulse, temperature_f, spo2, resp_rate, recorded_at")
