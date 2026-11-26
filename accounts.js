@@ -1,5 +1,6 @@
 // Vatte Hospital OS — Phase 10: Accounts (bills, payments, refunds, expenses, day book, cash close, rate list)
 // Every money change goes through a server function; nothing can be edited or deleted — mistakes are reversed.
+import { upiBox } from "./qr.js";
 let C, TAB = "new", RATES = [], CART = [], PAT = null, SUG = null;
 const $ = id => document.getElementById(id);
 const rs = n => "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 });
@@ -108,10 +109,11 @@ function drawCart(msg = "") {
 
 // ---------------------------------------------------------------- one bill: details, pay, refund, cancel, print
 async function openBill(id, note = "") {
-  const [{ data: i, error }, { data: items }, { data: pays }] = await Promise.all([
+  const [{ data: i, error }, { data: items }, { data: pays }, { data: H }] = await Promise.all([
     C.sb.from("invoices").select("*, patients(full_name, uhid, phone, address)").eq("id", id).single(),
     C.sb.from("invoice_items").select("description, quantity, rate").eq("invoice_id", id),
-    C.sb.from("payments").select("id, amount, method, reference, note, reverses_id, created_at").eq("invoice_id", id).order("created_at")
+    C.sb.from("payments").select("id, amount, method, reference, note, reverses_id, created_at").eq("invoice_id", id).order("created_at"),
+    C.sb.from("hospitals").select("name, upi_id, upi_name").maybeSingle()
   ]);
   if (error) { $("body").innerHTML = `<div class="card msg err">${C.esc(error.message)}</div>`; return; }
   const net = i.total - i.discount, paid = (pays || []).reduce((s, p) => s + Number(p.amount), 0), due = Math.round((net - paid) * 100) / 100;
@@ -133,6 +135,7 @@ async function openBill(id, note = "") {
         ${boss() && i.status !== "cancelled" && paid === 0 ? `<button class="small ghost" id="cx">✖️ Bill cancel</button>` : ""}
         <button class="small ghost" id="back2">← Bills list</button>
       </div></div>
+    ${i.status !== "cancelled" && due > 0 ? upiBox(H, due, i.invoice_no) : ""}
     ${i.status !== "cancelled" && due > 0 ? `<div class="card" style="background:#f0fdfa">
       <h3 style="margin:0 0 6px">💵 Payment lo</h3>
       <label>Rakam (baaki ${rs(due)})</label><input id="pa" type="number" min="1" step="0.01" value="${due}">
@@ -176,7 +179,7 @@ function askReason(label, cb) {
 }
 
 async function receipt(i, items, pays, net, paid, due) {
-  const { data: h } = await C.sb.from("hospitals").select("name").maybeSingle();
+  const { data: h } = await C.sb.from("hospitals").select("name, upi_id, upi_name").maybeSingle();
   $("receipt").innerHTML = `<div class="card" id="rcpt" style="max-width:420px;margin:10px auto;font-size:14px">
     <div style="text-align:center"><b style="font-size:18px">${C.esc(h?.name || C.me.hospital_name || "Hospital")}</b><br><small>Receipt / Bill</small></div>
     <hr><div>Bill: <b>${C.esc(i.invoice_no)}</b> · ${dt(i.created_at)}<br>Patient: <b>${C.esc(i.patients?.full_name)}</b> (${C.esc(i.patients?.uhid)})</div><hr>
@@ -185,6 +188,7 @@ async function receipt(i, items, pays, net, paid, due) {
       <tr><td><b>Kul dena</b></td><td style="text-align:right"><b>${rs(net)}</b></td></tr>
       <tr><td>Mila</td><td style="text-align:right">${rs(paid)}</td></tr><tr><td><b>Baaki</b></td><td style="text-align:right"><b>${rs(due)}</b></td></tr></table>
     <hr><small>${pays.map(p => `${dt(p.created_at)} · ${rs(p.amount)} · ${p.method}${p.reference ? " (" + C.esc(p.reference) + ")" : ""}`).join("<br>")}</small>
+    ${i.status !== "cancelled" && due > 0 ? upiBox(h, due, i.invoice_no).replace(' class="card upiqr"', ' class="upiqr"') : ""}
     <p style="text-align:center;margin-top:10px"><small>Dhanyavaad 🙏</small></p></div>
     <div class="row noprint" style="gap:6px;justify-content:center"><button id="rp">🖨️ Print / PDF</button><button class="ghost" id="rc">Band karo</button></div>`;
   $("rp").onclick = () => { document.body.classList.add("printing"); window.print(); setTimeout(() => document.body.classList.remove("printing"), 500); };
@@ -290,9 +294,30 @@ async function cashClose(note = "") {
 }
 
 // ---------------------------------------------------------------- rate list
+async function upiSettings() {
+  const box = $("upibox"); if (!box) return;
+  const { data: h } = await C.sb.from("hospitals").select("name, upi_id, upi_name").maybeSingle();
+  const canEdit = ["doctor", "admin"].includes(C.me.role);
+  box.innerHTML = `<h3 style="margin:0 0 6px">📱 UPI QR (bill par)</h3>
+    <p class="muted" style="margin:0 0 6px;font-size:13px">Hospital ke bank account ki UPI ID daalo (jaise <b>vattehospital@okaxis</b>). Har bill par baaki rakam ka QR apne aap banega. Ye password nahi hai — sirf paisa lene ka pata hai.</p>
+    <label>UPI ID</label><input id="upi" value="${C.esc(h?.upi_id || "")}" placeholder="naam@bank" autocapitalize="off" ${canEdit ? "" : "disabled"}>
+    <label>QR par naam</label><input id="upn" value="${C.esc(h?.upi_name || h?.name || "")}" ${canEdit ? "" : "disabled"}>
+    ${canEdit ? `<button class="full" id="upisv">💾 UPI save</button>` : "<small class='muted'>Sirf Doctor / Admin badal sakte hain.</small>"}<p class="msg" id="upim"></p>
+    <div id="upitest"></div>`;
+  const test = async () => { const { data: x } = await C.sb.from("hospitals").select("name, upi_id, upi_name").maybeSingle(); if (x?.upi_id) $("upitest").innerHTML = `<small class="muted">Test: ₹1 ka QR — apne phone se scan karke naam check kar lo (pay mat karna).</small>` + upiBox(x, 1, "TEST"); };
+  test();
+  if ($("upisv")) $("upisv").onclick = async () => {
+    const { error } = await C.sb.rpc("set_hospital_upi", { p_upi: $("upi").value, p_name: $("upn").value });
+    if (error) return err($("upim"), error);
+    $("upim").className = "msg ok"; $("upim").textContent = "✓ UPI save ho gayi"; test();
+  };
+}
+
 function rateList(note = "") {
   const CAT = { opd: "OPD", ipd: "IPD", lab: "Lab", procedure: "Procedure", bed: "Bed", pharmacy: "Pharmacy", other: "Other" };
+  setTimeout(upiSettings, 0);
   $("body").innerHTML = `${note ? `<div class="card msg ok">${C.esc(note)}</div>` : ""}
+    <div class="card" id="upibox"></div>
     <div class="card" style="overflow-x:auto"><h3 style="margin:0 0 6px">⚙️ Rate list</h3><table><tr><th>Naam</th><th>Rate (₹)</th><th>Roz ka?</th><th>Chalu</th><th></th></tr>${RATES.map(r => `<tr>
       <td>${C.esc(r.name)}<br><small class="muted">${CAT[r.category]}</small></td>
       <td><input type="number" min="0" value="${r.price}" data-pr="${r.id}" style="width:90px"></td><td>${r.per_day ? "✓" : ""}</td>

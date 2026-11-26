@@ -1,5 +1,6 @@
 // Vatte Hospital OS — Phase 11: Pharmacy (sale, stock in, stock, expiry / reorder, orders, today's sale + H1 register, medicine list)
 // Stock changes only through server functions; the server picks the batch (earliest expiry first) and the price (batch MRP).
+import { upiBox } from "./qr.js";
 let C, TAB = "sell", MEDS = [], PAT = null, CART = [], RECV = [];
 const $ = id => document.getElementById(id);
 const rs = n => "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 });
@@ -140,9 +141,11 @@ function drawCart(msg = "") {
 
 async function payBox(inv, p) {
   const net = Number(inv.total) - Number(inv.discount);
+  const { data: H } = await C.sb.from("hospitals").select("name, upi_id, upi_name").maybeSingle();
   $("cartbox").innerHTML = `<div class="card" style="border-color:#99f6e4;background:#f0fdfa">
     <h3 style="margin:0">✅ Bill ${C.esc(inv.invoice_no)} bana — ${rs(net)}</h3>
     <p class="muted" style="margin:4px 0">${C.esc(p?.full_name || "")}</p>
+    ${net > 0 ? upiBox(H, net, inv.invoice_no) : ""}
     ${net > 0 ? `<label>Kitna mila ₹</label><input id="pa" type="number" min="0" step="0.01" value="${net}">
     <div class="row" style="gap:6px;margin-top:6px">${METHODS.map(([k, l], i) => `<label class="row" style="gap:4px"><input type="radio" name="pm" value="${k}" ${i ? "" : "checked"} style="width:auto">${l}</label>`).join("")}</div>
     <input id="pr" placeholder="UPI / card transaction no. (cash mein khaali)">
@@ -162,7 +165,7 @@ async function receipt(id) {
     C.sb.from("invoices").select("*, patients(full_name, uhid)").eq("id", id).single(),
     C.sb.from("invoice_items").select("description, quantity, rate").eq("invoice_id", id),
     C.sb.from("payments").select("amount, method, created_at").eq("invoice_id", id),
-    C.sb.from("hospitals").select("name").maybeSingle()]);
+    C.sb.from("hospitals").select("name, upi_id, upi_name").maybeSingle()]);
   if (!i) return;
   const net = i.total - i.discount, paid = (pays || []).reduce((s, p) => s + Number(p.amount), 0);
   $("receipt").innerHTML = `<div class="card" id="rcpt" style="max-width:420px;margin:10px auto;font-size:14px">
@@ -173,6 +176,7 @@ async function receipt(id) {
       ${Number(i.discount) ? `<tr><td>Discount</td><td style="text-align:right">− ${rs(i.discount)}</td></tr>` : ""}
       <tr><td><b>Kul</b></td><td style="text-align:right"><b>${rs(net)}</b></td></tr>
       <tr><td>Mila</td><td style="text-align:right">${rs(paid)}</td></tr><tr><td><b>Baaki</b></td><td style="text-align:right"><b>${rs(net - paid)}</b></td></tr></table>
+    ${i.status !== "cancelled" && net - paid > 0 ? upiBox(h, net - paid, i.invoice_no).replace(' class="card upiqr"', ' class="upiqr"') : ""}
     <p style="text-align:center;margin-top:10px"><small>Dawa doctor ki salah se hi lein · Dhanyavaad 🙏</small></p></div>
     <div class="row noprint" style="gap:6px;justify-content:center"><button id="rp">🖨️ Print / PDF</button><button class="ghost" id="rc">Band karo</button></div>`;
   $("rp").onclick = () => { document.body.classList.add("printing"); window.print(); setTimeout(() => document.body.classList.remove("printing"), 500); };
