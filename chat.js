@@ -9,11 +9,11 @@ const TOOL = { find_patient: "🔎 patient dhoonda", latest_vitals: "🩺 vitals
   "reception__today": "🧾 aaj ka hisaab", "appointment__today": "📅 appointments", "lab__pending": "🧪 lab baaki", "lab__today": "🧪 aaj ka lab", "hr__today": "👥 aaj ki hazri", "records__pending": "🗂️ records baaki", "quality__today": "✅ aaj ki quality", "quality__numbers": "📈 quality numbers", "hr__salary_due": "💵 salary baaki",
   "operations__tickets": "🛠️ repair / service", "procurement__pending": "🛒 kharid baaki", "lab__patient_reports": "🧪 patient ki reports",
   "pharmacy__stock": "💊 stock / expiry", "pharmacy__find_medicine": "💊 dawa dhoondi", "pharmacy__sales_today": "💊 aaj ki bikri",
-  "pharmacy__reorder": "📦 kya mangwana hai", "pharmacy__order_draft": "✋ order list approval ko bheji", "accountant__dues": "💰 baaki bill", "boss__daily_report": "🤖 poori report" };
+  "pharmacy__reorder": "📦 kya mangwana hai", "pharmacy__order_draft": "✋ order list approval ko bheji", "accountant__dues": "💰 baaki bill", "boss__daily_report": "🤖 poori report", "boss__priorities": "🎯 zaroori kaam", "boss__numbers": "📊 aankde" };
 const HINTS = {
   nurse: ["Kis patient ke vitals baaki hain?", "Kitne bed khali hain?", "Aaj ke follow-up batao", "Dummy Ramesh ke aakhri vitals"],
   reception: ["Aaj ka hisaab batao", "Kitne bed khali hain?", "Aaj ki appointments", "Aaj ke follow-up kaun se hain?"],
-  boss: ["Aaj hospital ka haal batao", "Kahan dhyan dena hai?", "Kitne bed khali hain?", "Baaki bill kitne hain?"],
+  boss: ["Abhi kya zaroori hai?", "Aaj ke aankde kal se kaise hain?", "Aaj hospital ka haal batao", "Baaki bill kitne hain?"],
   appointment: ["Aaj ki appointments batao"],
   lab: ["Kaun se test baaki hain?", "Aaj lab mein kitna kaam hua?", "Koi critical report hai?"],
   pharmacy: ["Paracetamol kitni bachi hai?", "Kaunsi dawa expire hone wali hai?", "Kya mangwana hai?", "Aaj kitni bikri hui?"],

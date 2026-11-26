@@ -1,7 +1,7 @@
 // Vatte Hospital OS — Phase 1: login, roles, role-based home screen, staff management.
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION = "30"; window.APP_VERSION = APP_VERSION; // bump on every release so phones get the new code
+const APP_VERSION = "31"; window.APP_VERSION = APP_VERSION; // bump on every release so phones get the new code
 const app = document.getElementById("app");
 const who = document.getElementById("who");
 const cfg = window.NIDAN_CONFIG || {};
@@ -14,6 +14,7 @@ const ROLES = {
 
 // Every module, who can see it, and which phase builds it.
 const MODULES = [
+  { id: "boss",       ico: "🤖", name: "Boss AI (control room)", roles: ["doctor", "admin"], ready: true, file: "./boss.js" },
   { id: "dashboard",  ico: "📊", name: "Doctor Dashboard", roles: ["doctor", "admin"], ready: true, file: "./dashboard.js" },
   { id: "reception",  ico: "🧾", name: "Reception",        roles: ["doctor", "admin", "receptionist"], ready: true, file: "./reception.js" },
   { id: "nursing",    ico: "🩺", name: "Nursing Sister",   roles: ["doctor", "admin", "nurse"], ready: true, file: "./nursing.js" },
@@ -28,7 +29,7 @@ const MODULES = [
   { id: "ops",        ico: "🛠️", name: "Operations (hazri, repair, kharid)", roles: ["doctor", "admin", "receptionist", "nurse", "accountant", "pharmacist", "lab", "hr"], ready: true, file: "./ops.js" },
   { id: "records",    ico: "🗂️", name: "Medical Records & Follow-up", roles: ["doctor", "admin", "nurse", "receptionist", "lab"], ready: true, file: "./records.js" },
   { id: "quality",    ico: "✅", name: "Quality & Safety",  roles: ["doctor", "admin", "receptionist", "nurse", "accountant", "pharmacist", "lab", "hr"], ready: true, file: "./quality.js" },
-  { id: "boss",       ico: "🤖", name: "Boss AI chat",     roles: ["doctor", "admin"], phase: 15 },
+  
   { id: "staff",      ico: "🔐", name: "Staff & Roles",    roles: ["doctor", "admin"], ready: true },
   { id: "audit",      ico: "📜", name: "Audit Log",        roles: ["doctor", "admin"], ready: true }
 ];
