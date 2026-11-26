@@ -296,7 +296,7 @@ Deno.serve(async (req) => {
       await sb.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", convId);
     }
     const { error: em } = await sb.from("ai_messages").insert([
-      { conversation_id: convId, role: "user", content: question },
+      { conversation_id: convId, role: "user", content: question, provider: null, ms: null, tools: [] },
       { conversation_id: convId, role: "assistant", content: reply, provider, ms: totalMs, tools: [...new Set(used)].slice(0, 10) },
     ]);
     if (em) throw new Error("Chat save nahi hui: " + em.message);
