@@ -1,7 +1,7 @@
 // Vatte Hospital OS — Phase 1: login, roles, role-based home screen, staff management.
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION = "21"; window.APP_VERSION = APP_VERSION; // bump on every release so phones get the new code
+const APP_VERSION = "22"; window.APP_VERSION = APP_VERSION; // bump on every release so phones get the new code
 const app = document.getElementById("app");
 const who = document.getElementById("who");
 const cfg = window.NIDAN_CONFIG || {};
@@ -121,12 +121,16 @@ function showHome() {
   const mine = MODULES.filter(m => m.roles.includes(me.role));
   app.innerHTML = `<h2>Namaste${me.full_name ? ", " + esc(me.full_name) : ""} 👋</h2>
     <p class="muted">${esc(me.hospital_name)} · ${esc(ROLES[me.role])}</p>
+    <div id="gsearch"></div>
     <div class="grid">${mine.map(m => `
       <button class="tile ${m.ready ? "" : "soon"}" data-id="${m.id}">
         <span class="ico">${m.ico}</span>${esc(m.name)}
         <small>${m.ready ? "Taiyaar" : "Phase " + m.phase + " mein aayega"}</small>
       </button>`).join("")}</div>`;
   app.querySelectorAll(".tile").forEach(t => t.onclick = () => openModule(t.dataset.id));
+  import("./search.js?v=" + APP_VERSION)
+    .then(m => { const el = document.getElementById("gsearch"); if (el) m.mountSearch({ sb, me, app, esc, goHome: showHome }, el); })
+    .catch(() => {});
 }
 
 function openModule(id) {
