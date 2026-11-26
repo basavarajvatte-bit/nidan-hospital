@@ -6,7 +6,8 @@ const $ = id => document.getElementById(id);
 const TOOL = { find_patient: "🔎 patient dhoonda", latest_vitals: "🩺 vitals dekhe", list_beds: "🛏️ bed list",
   "nurse__overdue_vitals": "⏰ baaki vitals", "operations__beds": "🛏️ bed sthiti", "followup__due": "📞 follow-up list",
   "followup__schedule": "✋ follow-up approval ko bheja", "operations__bed_status": "✋ bed badlav approval ko bheja",
-  "reception__today": "🧾 aaj ka hisaab", "appointment__today": "📅 appointments", "lab__pending": "🧪 lab baaki", "lab__today": "🧪 aaj ka lab", "lab__patient_reports": "🧪 patient ki reports",
+  "reception__today": "🧾 aaj ka hisaab", "appointment__today": "📅 appointments", "lab__pending": "🧪 lab baaki", "lab__today": "🧪 aaj ka lab", "hr__today": "👥 aaj ki hazri", "hr__salary_due": "💵 salary baaki",
+  "operations__tickets": "🛠️ repair / service", "procurement__pending": "🛒 kharid baaki", "lab__patient_reports": "🧪 patient ki reports",
   "pharmacy__stock": "💊 stock / expiry", "pharmacy__find_medicine": "💊 dawa dhoondi", "pharmacy__sales_today": "💊 aaj ki bikri",
   "pharmacy__reorder": "📦 kya mangwana hai", "pharmacy__order_draft": "✋ order list approval ko bheji", "accountant__dues": "💰 baaki bill", "boss__daily_report": "🤖 poori report" };
 const HINTS = {
@@ -18,7 +19,9 @@ const HINTS = {
   pharmacy: ["Paracetamol kitni bachi hai?", "Kaunsi dawa expire hone wali hai?", "Kya mangwana hai?", "Aaj kitni bikri hui?"],
   accountant: ["Kitne bill baaki hain?"],
   followup: ["Aaj ke follow-up batao", "Kaun se follow-up late hain?"],
-  operations: ["Kitne bed khali hain?", "Kaun se bed safai mein hain?"]
+  operations: ["Kitne bed khali hain?", "Kaun se repair baaki hain?", "Kis machine ki service due hai?"],
+  hr: ["Aaj kaun haazir hai?", "Pichhle mahine ki salary kitni baaki hai?"],
+  procurement: ["Kaun si kharid manzoori ke liye baaki hai?", "Kaun si dawa mangwani hai?"]
 };
 let ICON = {};
 
@@ -33,7 +36,7 @@ export async function render(ctx, pick = null) {
   ]);
   if (error) { $("body").innerHTML = `<div class="card msg err">${C.esc(error.message)}</div>`; return; }
   ICON = Object.fromEntries((ag || []).map(x => [x.id, x]));
-  const order = ["boss", "nurse", "reception", "appointment", "lab", "pharmacy", "accountant", "followup", "operations"];
+  const order = ["boss", "nurse", "reception", "appointment", "lab", "pharmacy", "accountant", "followup", "operations", "hr", "procurement"];
   LIST = (data || []).filter(a => a.roles.includes(C.me.role)).sort((x, y) => order.indexOf(x.agent_id) - order.indexOf(y.agent_id));
   if (!LIST.length) { $("body").innerHTML = `<div class="card"><p class="muted">Aapke role ke liye abhi koi AI chat nahi hai.</p></div>`; return; }
   const chosen = pick && LIST.find(a => a.agent_id === pick);

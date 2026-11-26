@@ -275,7 +275,7 @@ async function alerts() {
 async function orders() {
   $("body").innerHTML = `<div class="card">Loading…</div>`;
   const { data, error } = await C.sb.from("purchases").select("id, status, total, created_at, purchase_items(description, quantity, rate)")
-    .eq("kind", "request").order("created_at", { ascending: false }).limit(20);
+    .eq("kind", "request").eq("purpose", "pharmacy").order("created_at", { ascending: false }).limit(20);
   if (error) { $("body").innerHTML = `<div class="card msg err">${C.esc(error.message)}</div>`; return; }
   const ST = { approved: "🟡 Bhejna hai", received: "🟢 Maal aa gaya", cancelled: "✖️ Cancel" };
   $("body").innerHTML = (data || []).length ? data.map(p => `<div class="card">
