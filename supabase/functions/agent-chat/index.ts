@@ -118,7 +118,11 @@ function systemPrompt(ctx: any, agentId: string) {
 NIYAM:
 - Jawab chhota, saaf, Hinglish (Roman Hindi) mein do. Staff Marathi ya English mein likhe to usi bhasha mein.
 - Hospital ka koi bhi data sirf tools se lo. Andaaza ya banaya hua number kabhi mat do. Tool fail ho to saaf batao.
-- Jo kaam aapke tools mein nahi hai, uske liye saaf bolo ki ye abhi aapke paas nahi hai (aage ke phases mein aayega) — kuch banao mat.
+- Koi list / report / ginti maange to PEHLE apne tools ki list dekho aur sahi tool CHALAO. Bina tool chalaye kabhi mat kaho ki "tool nahi hai".
+- Patient list: abhi admit → ipd__admitted · aaj / kisi din ke OPD → opd__list · admit-discharge dates ke beech → ipd__movements · SAARE registered patient → patients__list · ek patient ki poori jaankari → find_patient phir patient__summary.
+- Is chat mein pehle kabhi "tool nahi hai" kaha ho to bhi dobara tools dekho — naye tools jud chuke hain; purani baat mat dohrao.
+- Sach mein koi tool fit na ho tabhi saaf bolo ki ye abhi aapke paas nahi hai — kuch banao mat.
+- Lambi list ho to saaf table / numbered list mein do (naam + UHID code + zaroori baat), aur upar kul ginti likho.
 - Aap diagnosis nahi karte, dawa / dose nahi batate, doctor ka order nahi badalte. Aisa pooche to bolo "ye doctor tay karenge".
 - Khatarnaak vitals (BP 180+ ya 90 se kam, SpO2 92 se kam, pulse 130+ ya 50 se kam, temp 103F+) dikhe to turant doctor ko batane ko kaho.
 - Record badalne wale kaam sirf approval queue mein jaate hain — aap approve nahi karte; "ho gaya" tabhi bolo jab tool status "done" ho.
@@ -162,7 +166,7 @@ function toGemini(msgs: Msg[]) {
 async function openAICompat(url: string, key: string, model: string, extra: any, sys: string, msgs: Msg[], tools: any[], signal: AbortSignal) {
   const r = await fetch(url, {
     method: "POST", signal, headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({ model, messages: toOpenAI(sys, msgs), temperature: 0.2, max_tokens: 800, ...extra,
+    body: JSON.stringify({ model, messages: toOpenAI(sys, msgs), temperature: 0.2, max_tokens: 3000, ...extra,
       ...(tools.length ? { tools: tools.map((t) => ({ type: "function", function: t })), tool_choice: "auto" } : {}) }),
   });
   if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 160)}`);
@@ -182,7 +186,7 @@ async function geminiCall(key: string, sys: string, msgs: Msg[], tools: any[], s
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST", signal, headers: { "Content-Type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents: toGemini(msgs),
-        ...(tools.length ? { tools: [{ functionDeclarations: tools }] } : {}), generationConfig: { temperature: 0.2, maxOutputTokens: 800 } }),
+        ...(tools.length ? { tools: [{ functionDeclarations: tools }] } : {}), generationConfig: { temperature: 0.2, maxOutputTokens: 3000 } }),
     });
     if (r.ok) {
       const d = await r.json();
@@ -268,7 +272,9 @@ Deno.serve(async (req) => {
       if (!c || c.user_id !== uid || c.agent_id !== agent) convId = null;
       else {
         const { data: old } = await sb.from("ai_messages").select("role, content").eq("conversation_id", convId).order("id", { ascending: false }).limit(12);
-        history = (old || []).reverse().map((m: any) => ({ role: m.role, text: m.content }));
+        // drop old "tool nahi hai" answers so the AI doesn't repeat them after new tools were added
+        history = (old || []).reverse().filter((m: any) => !(m.role === "assistant" && /(tool|feature)[^.]{0,40}(nahi|not available)|future phase|aage ke phase/i.test(m.content || "")))
+          .map((m: any) => ({ role: m.role, text: m.content }));
       }
     }
 

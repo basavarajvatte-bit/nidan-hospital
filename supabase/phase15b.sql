@@ -133,3 +133,38 @@ begin
             where n.nspname = 'public' and p.proname like 'agent\_h\_%'
   loop execute format('revoke all on function %s from public, anon, authenticated', f); end loop;
 end $$;
+
+-- ---------- (applied as migration "phase15c_all_patients_list") patients.list: SAARE registered patient ----------
+create or replace function public.agent_h_patients_list(h uuid, inp jsonb) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare f date := nullif(inp->>'from','')::date; t date := nullif(inp->>'to','')::date;
+        lim int := least(greatest(coalesce(nullif(inp->>'limit','')::int, 100), 1), 300);
+        g text := nullif(lower(inp->>'gender'), ''); items jsonb; n int; tot int;
+begin
+  select count(*) into tot from public.patients where hospital_id = h;
+  select count(*) into n from public.patients p where p.hospital_id = h
+     and (f is null or (p.created_at at time zone 'Asia/Kolkata')::date >= f) and (t is null or (p.created_at at time zone 'Asia/Kolkata')::date <= t)
+     and (g is null or p.gender = g);
+  select coalesce(jsonb_agg(x), '[]') into items from (
+    select jsonb_build_object('patient', p.full_name, 'uhid', p.uhid, 'patient_id', p.id, 'phone', p.phone, 'umar', p.age_years, 'gender', p.gender,
+             'register_hua', to_char(p.created_at at time zone 'Asia/Kolkata', 'DD Mon YY'),
+             'aakhri_visit', (select to_char(max(e.started_at) at time zone 'Asia/Kolkata', 'DD Mon YY') from public.encounters e where e.patient_id = p.id and e.status <> 'cancelled'),
+             'visits', (select count(*) from public.encounters e where e.patient_id = p.id and e.status <> 'cancelled'),
+             'abhi_admit', exists (select 1 from public.admissions a where a.patient_id = p.id and a.status = 'admitted')) x
+      from public.patients p where p.hospital_id = h
+       and (f is null or (p.created_at at time zone 'Asia/Kolkata')::date >= f) and (t is null or (p.created_at at time zone 'Asia/Kolkata')::date <= t)
+       and (g is null or p.gender = g)
+     order by p.created_at desc limit lim) s;
+  return jsonb_build_object('summary', 'Hospital mein kul ' || tot || ' patient registered' ||
+           case when f is not null or t is not null or g is not null then ' · filter se ' || n else '' end ||
+           case when n > lim then ' · naye ' || lim || ' dikhaye (aur chahiye to limit badhayein)' else '' end,
+    'items', items, 'alert', false);
+end $$;
+revoke all on function public.agent_h_patients_list(uuid, jsonb) from public, anon, authenticated;
+
+insert into public.agent_actions(id, agent_id, title, description, kind, risk, requester_roles, approver_roles, tables, ord, handler, params) values
+ ('patients.list','reception','Saare patient ki list','Hospital mein register hue SAARE patient (naye pehle): naam, UHID, phone, umar, kab register, aakhri visit, kitne visit, abhi admit? Date / gender filter ho sakta hai','check','low',
+   '{doctor,admin,receptionist,nurse}','{}','{patients,encounters,admissions}',2,'agent_h_patients_list',
+   '{"type":"object","properties":{"from":{"type":"string","description":"register hone ki shuru date YYYY-MM-DD (optional)"},"to":{"type":"string","description":"aakhri date YYYY-MM-DD (optional)"},"gender":{"type":"string","enum":["male","female","other"]},"limit":{"type":"integer","description":"kitne (default 100, max 300)"}}}')
+on conflict (id) do update set title=excluded.title, description=excluded.description, requester_roles=excluded.requester_roles, tables=excluded.tables, ord=excluded.ord, handler=excluded.handler, params=excluded.params;
+update public.ai_chat_agents set tools = array(select distinct unnest(tools || '{patients.list}')) where agent_id in ('boss','reception','nurse','records');
